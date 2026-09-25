@@ -11,37 +11,59 @@
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIINfQ3ynhMZjoTvuQNMP3C1LsZxZlB2M="
-    crossorigin=""
   >
 
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
     body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      font-family: sans-serif;
+      color: #222;
+      background: #fff;
+    }
+
+    main {
+      width: 100%;
       max-width: 900px;
       margin: 0 auto;
-      padding: 16px;
-      font-family: sans-serif;
-      line-height: 1.6;
-      color: #222;
+      padding: 12px;
     }
 
     h1 {
-      font-size: 1.5rem;
+      margin: 0 0 12px;
+      font-size: 1.4rem;
     }
 
     #status {
+      width: 100%;
+      margin: 0 0 12px;
       padding: 10px;
+      overflow-wrap: anywhere;
       background: #f2f2f2;
       border-radius: 6px;
-      overflow-wrap: anywhere;
     }
 
     #map {
+      display: block;
       width: 100%;
-      height: 65vh;
-      min-height: 350px;
+      height: 60vh;
+      min-height: 320px;
+      max-height: 650px;
       border: 1px solid #aaa;
       border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .success {
+      color: #075f23;
+      background: #effff3 !important;
     }
 
     .error {
@@ -49,44 +71,41 @@
       background: #fff0f0 !important;
     }
 
-    .success {
-      color: #075f23;
-      background: #effff3 !important;
+    @media (max-width: 600px) {
+      main {
+        padding: 8px;
+      }
+
+      #map {
+        height: 55vh;
+        min-height: 300px;
+      }
     }
   </style>
 </head>
 
 <body>
-  <h1>チーム位置情報テスト</h1>
-
-  <p id="status">Supabaseから読み込み中...</p>
-
-  <div id="map"></div>
+  <main>
+    <h1>チーム位置情報テスト</h1>
+    <p id="status">Supabaseから読み込み中...</p>
+    <div id="map"></div>
+  </main>
 
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
   ></script>
 
   <script>
-    /*
-     * Project URLには /rest/v1 を付けません。
-     * URL末尾の / も付けません。
-     */
     const SUPABASE_URL =
       "https://tmxmmikcgzdcyyotkiex.supabase.co";
 
-    /*
-     * 下の文字だけ、新しく発行したPublishable keyへ
-     * 書き換えてください。
-     */
     const SUPABASE_KEY =
       "sb_publishable_dSckTd34uKOP-zWHbfMsTg_pr74IBgb";
 
     const TEAM_ID = "test-a";
 
-    const statusElement = document.getElementById("status");
+    const statusElement =
+      document.getElementById("status");
 
     const map = L.map("map").setView(
       [31.906, 130.455],
@@ -103,47 +122,67 @@
       }
     ).addTo(map);
 
+    function showError(message) {
+      statusElement.textContent =
+        "位置を取得できませんでした: " + message;
+
+      statusElement.className = "error";
+    }
+
     async function loadRemoteLocation() {
       try {
         if (
-          SUPABASE_KEY ===
-          "ここに新しいPublishable keyを入力"
+          !SUPABASE_KEY.startsWith("sb_publishable_")
         ) {
           throw new Error(
-            "Publishable keyが未入力です。"
+            "Publishable keyを入力してください。"
           );
         }
 
+        const tablePath =
+          "/rest/v1/team_locations";
+
+        const query =
+          "?select=team_id%2Clatitude%2Clongitude%2Caccuracy%2Crecorded_at" +
+          "&team_id=eq." +
+          encodeURIComponent(TEAM_ID) +
+          "&order=recorded_at.desc" +
+          "&limit=1";
+
         const endpoint =
-          `${SUPABASE_URL}/rest/v1/team_locations` +
-          `?select=team_id%2Clatitude%2Clongitude%2Caccuracy%2Crecorded_at` +
-          `&team_id=eq.${encodeURIComponent(TEAM_ID)}` +
-          `&order=recorded_at.desc` +
-          `&limit=1`;
+          SUPABASE_URL + tablePath + query;
 
         const response = await fetch(endpoint, {
           method: "GET",
           headers: {
             apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-            Accept: "application/json"
+            Authorization:
+              "Bearer " + SUPABASE_KEY,
+            Accept: "application/json",
             "Accept-Profile": "public"
           }
         });
 
         if (!response.ok) {
-          const message = await response.text();
+          const text = await response.text();
 
           throw new Error(
-            `HTTP ${response.status}: ${message}`
+            "HTTP " +
+            response.status +
+            ": " +
+            text
           );
         }
 
         const rows = await response.json();
 
-        if (!Array.isArray(rows) || rows.length === 0) {
+        if (
+          !Array.isArray(rows) ||
+          rows.length === 0
+        ) {
           statusElement.textContent =
-            `${TEAM_ID}の位置データがありません。`;
+            "接続には成功しましたが、test-aのデータがありません。";
+
           return;
         }
 
@@ -157,29 +196,40 @@
           !Number.isFinite(longitude)
         ) {
           throw new Error(
-            "緯度または経度が正しくありません。"
+            "保存された緯度または経度が正しくありません。"
           );
         }
 
-        const point = [latitude, longitude];
+        const point = [
+          latitude,
+          longitude
+        ];
 
-        const accuracyText =
-          Number.isFinite(accuracy)
-            ? `約${Math.round(accuracy)}m`
-            : "不明";
+        let accuracyText = "不明";
 
-        const recordedAtText =
-          row.recorded_at
-            ? new Date(row.recorded_at)
-                .toLocaleString("ja-JP")
-            : "不明";
+        if (Number.isFinite(accuracy)) {
+          accuracyText =
+            "約" + Math.round(accuracy) + "m";
+        }
+
+        let recordedAtText = "不明";
+
+        if (row.recorded_at) {
+          recordedAtText =
+            new Date(row.recorded_at)
+              .toLocaleString("ja-JP");
+        }
 
         L.marker(point)
           .addTo(map)
           .bindPopup(
-            `<strong>チーム: ${escapeHtml(row.team_id)}</strong>` +
-            `<br>精度: ${accuracyText}` +
-            `<br>更新: ${recordedAtText}`
+            "<strong>チーム: " +
+            escapeHtml(row.team_id) +
+            "</strong>" +
+            "<br>精度: " +
+            accuracyText +
+            "<br>更新: " +
+            recordedAtText
           )
           .openPopup();
 
@@ -197,18 +247,17 @@
 
         map.setView(point, 17);
 
+        setTimeout(function () {
+          map.invalidateSize();
+        }, 200);
+
         statusElement.textContent =
           "Supabaseからテスト位置を取得しました。";
 
-        statusElement.classList.add("success");
+        statusElement.className = "success";
       } catch (error) {
         console.error(error);
-
-        statusElement.textContent =
-          "位置を取得できませんでした: " +
-          error.message;
-
-        statusElement.classList.add("error");
+        showError(error.message);
       }
     }
 
@@ -220,6 +269,13 @@
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
     }
+
+    window.addEventListener(
+      "resize",
+      function () {
+        map.invalidateSize();
+      }
+    );
 
     loadRemoteLocation();
   </script>
