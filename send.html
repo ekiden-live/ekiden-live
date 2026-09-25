@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>位置情報送信</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: sans-serif;
+      color: #222;
+      background: #f5f7f9;
+    }
+
+    main {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .card {
+      padding: 18px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    h1 {
+      margin: 0 0 16px;
+      font-size: 1.5rem;
+    }
+
+    p {
+      line-height: 1.7;
+    }
+
+    #status {
+      min-height: 3em;
+      padding: 12px;
+      overflow-wrap: anywhere;
+      background: #f2f2f2;
+      border-radius: 6px;
+    }
+
+    #details {
+      display: none;
+      margin-top: 12px;
+      padding: 12px;
+      background: #f7f7f7;
+      border-radius: 6px;
+      line-height: 1.8;
+    }
+
+    button {
+      width: 100%;
+      min-height: 52px;
+      margin-top: 12px;
+      padding: 12px;
+      color: #fff;
+      font-size: 1.05rem;
+      font-weight: bold;
+      background: #1769aa;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .success {
+      color: #075f23;
+      background: #effff3 !important;
+    }
+
+    .error {
+      color: #b00020;
+      background: #fff0f0 !important;
+    }
+
+    .notice {
+      margin-top: 16px;
+      padding: 12px;
+      font-size: 0.9rem;
+      background: #fff8df;
+      border-radius: 6px;
+    }
+
+    a {
+      color: #075ea8;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="card">
+      <h1>位置情報送信</h1>
+
+      <p>
+        ボタンを押すと、この端末の現在位置を1回だけ取得し、
+        チーム「test-a」の位置として送信します。
+      </p>
+
+      <p id="status">
+        「現在位置を取得して送信」を押してください。
+      </p>
+
+      <div id="details"></div>
+
+      <button id="sendButton" type="button">
+        現在位置を取得して送信
+      </button>
+
+      <div class="notice">
+        位置情報は端末や通信状況により誤差があります。
+        安全を確認し、立ち止まって操作してください。
+      </div>
+
+      <p>
+        <a href="./index.html">閲覧用地図を開く</a>
+      </p>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL =
+      "https://tmxmmikcgzdcyyotkiex.supabase.co";
+
+    /*
+     * 新しく発行したPublishable keyを入力してください。
+     * Secret keyやservice_roleは使用しないでください。
+     */
+    const SUPABASE_KEY =
+      "ここにPublishable keyを入力";
+
+    const TEAM_ID = "test-a";
+
+    const statusElement =
+      document.getElementById("status");
+
+    const detailsElement =
+      document.getElementById("details");
+
+    const sendButton =
+      document.getElementById("sendButton");
+
+    function setStatus(message, type) {
+      statusElement.textContent = message;
+      statusElement.className = type || "";
+    }
+
+    function showDetails(position) {
+      const latitude =
+        position.coords.latitude;
+
+      const longitude =
+        position.coords.longitude;
+
+      const accuracy =
+        position.coords.accuracy;
+
+      detailsElement.innerHTML =
+        "<strong>取得結果</strong><br>" +
+        "緯度: " +
+        escapeHtml(latitude.toFixed(6)) +
+        "<br>" +
+        "経度: " +
+        escapeHtml(longitude.toFixed(6)) +
+        "<br>" +
+        "精度: 約" +
+        escapeHtml(Math.round(accuracy)) +
+        "m";
+
+      detailsElement.style.display = "block";
+    }
+
+    function getCurrentPosition() {
+      return new Promise(function (resolve, reject) {
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          reject,
+          {
+            enableHighAccuracy: true,
+            timeout: 20000,
+            maximumAge: 0
+          }
+        );
+      });
+    }
+
+    async function insertLocation(position) {
+      const endpoint =
+        SUPABASE_URL +
+        "/rest/v1/team_locations";
+
+      const payload = {
+        team_id: TEAM_ID,
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        accuracy: position.coords.accuracy,
+        recorded_at: new Date().toISOString()
+      };
+
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization:
+            "Bearer " + SUPABASE_KEY,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "Content-Profile": "public",
+          Prefer: "return=representation"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const responseText =
+          await response.text();
+
+        throw new Error(
+          "HTTP " +
+          response.status +
+          ": " +
+          responseText
+        );
+      }
+
+      return response.json();
+    }
+
+    function getLocationErrorMessage(error) {
+      if (!error) {
+        return "位置情報を取得できませんでした。";
+      }
+
+      switch (error.code) {
+        case 1:
+          return (
+            "位置情報の利用が許可されていません。" +
+            "ブラウザの設定で、このページの位置情報を許可してください。"
+          );
+
+        case 2:
+          return (
+            "現在位置を特定できませんでした。" +
+            "屋外または窓際で、通信状態を確認して再試行してください。"
+          );
+
+        case 3:
+          return (
+            "位置情報の取得が時間切れになりました。" +
+            "場所を変えて再試行してください。"
+          );
+
+        default:
+          return (
+            error.message ||
+            "位置情報を取得できませんでした。"
+          );
+      }
+    }
+
+    async function sendCurrentLocation() {
+      try {
+        sendButton.disabled = true;
+
+        detailsElement.style.display = "none";
+
+        if (
+          !SUPABASE_KEY.startsWith(
+            "sb_publishable_"
+          )
+        ) {
+          throw new Error(
+            "Publishable keyを入力してください。"
+          );
+        }
+
+        if (!window.isSecureContext) {
+          throw new Error(
+            "位置情報の取得にはHTTPS接続が必要です。"
+          );
+        }
+
+        if (!navigator.geolocation) {
+          throw new Error(
+            "この端末またはブラウザは位置情報取得に対応していません。"
+          );
+        }
+
+        setStatus(
+          "現在位置を取得しています...",
+          ""
+        );
+
+        let position;
+
+        try {
+          position =
+            await getCurrentPosition();
+        } catch (locationError) {
+          throw new Error(
+            getLocationErrorMessage(
+              locationError
+            )
+          );
+        }
+
+        showDetails(position);
+
+        setStatus(
+          "現在位置を取得しました。Supabaseへ送信しています...",
+          ""
+        );
+
+        await insertLocation(position);
+
+        setStatus(
+          "現在位置を送信しました。",
+          "success"
+        );
+      } catch (error) {
+        console.error(error);
+
+        setStatus(
+          "送信できませんでした: " +
+          error.message,
+          "error"
+        );
+      } finally {
+        sendButton.disabled = false;
+      }
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    sendButton.addEventListener(
+      "click",
+      sendCurrentLocation
+    );
+  </script>
+</body>
+</html>
