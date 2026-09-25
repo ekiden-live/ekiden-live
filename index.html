@@ -278,6 +278,11 @@
     );
 
     loadRemoteLocation();
+
+setInterval(function () {
+  loadRemoteLocation();
+}, 30000);
+
   </script>
 </body>
 </html>
