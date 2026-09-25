@@ -2,11 +2,13 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   >
-  <title>チーム位置情報テスト</title>
+
+  <title>鶴田A 位置情報</title>
 
   <link
     rel="stylesheet"
@@ -26,7 +28,7 @@
       overflow-x: hidden;
       font-family: sans-serif;
       color: #222;
-      background: #fff;
+      background: #f5f7f9;
     }
 
     main {
@@ -36,18 +38,57 @@
       padding: 12px;
     }
 
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
     h1 {
-      margin: 0 0 12px;
+      margin: 0;
       font-size: 1.4rem;
+    }
+
+    .team-name {
+      color: #075ea8;
     }
 
     #status {
       width: 100%;
-      margin: 0 0 12px;
+      margin: 0 0 10px;
       padding: 10px;
       overflow-wrap: anywhere;
       background: #f2f2f2;
       border-radius: 6px;
+    }
+
+    #information {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .information-item {
+      min-width: 0;
+      padding: 10px;
+      overflow-wrap: anywhere;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+    }
+
+    .information-label {
+      display: block;
+      margin-bottom: 4px;
+      color: #555;
+      font-size: 0.8rem;
+    }
+
+    .information-value {
+      font-weight: bold;
     }
 
     #map {
@@ -59,6 +100,36 @@
       border: 1px solid #aaa;
       border-radius: 6px;
       overflow: hidden;
+      background: #ddd;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    button,
+    .link-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 16px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      text-decoration: none;
+      background: #1769aa;
+      border: 0;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
     }
 
     .success {
@@ -71,14 +142,47 @@
       background: #fff0f0 !important;
     }
 
+    .warning {
+      color: #795400;
+      background: #fff8df !important;
+    }
+
+    .loading {
+      color: #084f83;
+      background: #eef8ff !important;
+    }
+
+    .notice {
+      margin-top: 12px;
+      padding: 10px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      background: #fff8df;
+      border-radius: 6px;
+    }
+
     @media (max-width: 600px) {
       main {
         padding: 8px;
       }
 
+      .header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      #information {
+        grid-template-columns: 1fr;
+      }
+
       #map {
         height: 55vh;
         min-height: 300px;
+      }
+
+      button,
+      .link-button {
+        width: 100%;
       }
     }
   </style>
@@ -86,9 +190,79 @@
 
 <body>
   <main>
-    <h1>チーム位置情報テスト</h1>
-    <p id="status">Supabaseから読み込み中...</p>
+    <div class="header">
+      <h1>
+        チーム
+        <span class="team-name">鶴田A</span>
+        の最新位置
+      </h1>
+    </div>
+
+    <p id="status">
+      Supabaseから位置情報を読み込んでいます...
+    </p>
+
+    <div id="information">
+      <div class="information-item">
+        <span class="information-label">
+          最終位置送信
+        </span>
+
+        <span
+          id="recordedAt"
+          class="information-value"
+        >
+          -
+        </span>
+      </div>
+
+      <div class="information-item">
+        <span class="information-label">
+          位置精度
+        </span>
+
+        <span
+          id="accuracy"
+          class="information-value"
+        >
+          -
+        </span>
+      </div>
+
+      <div class="information-item">
+        <span class="information-label">
+          次回自動更新
+        </span>
+
+        <span
+          id="countdown"
+          class="information-value"
+        >
+          -
+        </span>
+      </div>
+    </div>
+
     <div id="map"></div>
+
+    <div class="actions">
+      <button id="reloadButton" type="button">
+        今すぐ更新
+      </button>
+
+      <a
+        class="link-button"
+        href="./send.html"
+      >
+        位置送信ページを開く
+      </a>
+    </div>
+
+    <div class="notice">
+      この地図は30秒ごとに自動更新します。
+      スマートフォン側の送信が停止している場合、
+      マーカーの位置は変わりません。
+    </div>
   </main>
 
   <script
@@ -99,13 +273,37 @@
     const SUPABASE_URL =
       "https://tmxmmikcgzdcyyotkiex.supabase.co";
 
+    /*
+     * 現在使用しているPublishable keyを入力してください。
+     * Secret keyやservice_roleは使用しないでください。
+     */
     const SUPABASE_KEY =
-      "sb_publishable_dSckTd34uKOP-zWHbfMsTg_pr74IBgb";
+      "ここにPublishable keyを入力";
 
     const TEAM_ID = "鶴田A";
 
+    const UPDATE_INTERVAL_MS = 30000;
+
+    /*
+     * 最終位置送信から2分を超えた場合に、
+     * 「位置情報が古い可能性があります」と表示します。
+     */
+    const STALE_TIME_MS = 120000;
+
     const statusElement =
       document.getElementById("status");
+
+    const recordedAtElement =
+      document.getElementById("recordedAt");
+
+    const accuracyElement =
+      document.getElementById("accuracy");
+
+    const countdownElement =
+      document.getElementById("countdown");
+
+    const reloadButton =
+      document.getElementById("reloadButton");
 
     const map = L.map("map").setView(
       [31.906, 130.455],
@@ -117,22 +315,148 @@
       {
         maxZoom: 19,
         attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">' +
-          "OpenStreetMap</a> contributors"
+          '&copy; <a href="' +
+          'https://www.openstreetmap.org/copyright' +
+          '">OpenStreetMap</a> contributors'
       }
     ).addTo(map);
 
-    function showError(message) {
-      statusElement.textContent =
-        "位置を取得できませんでした: " + message;
+    let currentMarker = null;
+    let currentCircle = null;
+    let isLoading = false;
+    let secondsUntilUpdate =
+      UPDATE_INTERVAL_MS / 1000;
 
-      statusElement.className = "error";
+    function setStatus(message, type) {
+      statusElement.textContent = message;
+      statusElement.className = type || "";
+    }
+
+    function formatDateTime(value) {
+      if (!value) {
+        return "-";
+      }
+
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return "-";
+      }
+
+      return date.toLocaleString("ja-JP");
+    }
+
+    function getAgeText(recordedAt) {
+      const date = new Date(recordedAt);
+
+      if (Number.isNaN(date.getTime())) {
+        return "";
+      }
+
+      const elapsedMilliseconds =
+        Date.now() - date.getTime();
+
+      if (elapsedMilliseconds < 0) {
+        return "たった今";
+      }
+
+      const elapsedSeconds =
+        Math.floor(elapsedMilliseconds / 1000);
+
+      if (elapsedSeconds < 60) {
+        return elapsedSeconds + "秒前";
+      }
+
+      const elapsedMinutes =
+        Math.floor(elapsedSeconds / 60);
+
+      if (elapsedMinutes < 60) {
+        return elapsedMinutes + "分前";
+      }
+
+      const elapsedHours =
+        Math.floor(elapsedMinutes / 60);
+
+      return elapsedHours + "時間前";
+    }
+
+    function isStale(recordedAt) {
+      const date = new Date(recordedAt);
+
+      if (Number.isNaN(date.getTime())) {
+        return true;
+      }
+
+      return (
+        Date.now() - date.getTime() >
+        STALE_TIME_MS
+      );
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function updateMarker(
+      point,
+      accuracy,
+      popupHtml
+    ) {
+      if (currentMarker === null) {
+        currentMarker = L.marker(point)
+          .addTo(map);
+      } else {
+        currentMarker.setLatLng(point);
+      }
+
+      currentMarker
+        .bindPopup(popupHtml)
+        .openPopup();
+
+      if (
+        Number.isFinite(accuracy) &&
+        accuracy >= 0
+      ) {
+        if (currentCircle === null) {
+          currentCircle = L.circle(point, {
+            radius: accuracy,
+            color: "#d93636",
+            fillColor: "#d93636",
+            fillOpacity: 0.15
+          }).addTo(map);
+        } else {
+          currentCircle.setLatLng(point);
+          currentCircle.setRadius(accuracy);
+        }
+      } else if (currentCircle !== null) {
+        map.removeLayer(currentCircle);
+        currentCircle = null;
+      }
     }
 
     async function loadRemoteLocation() {
+      if (isLoading) {
+        return;
+      }
+
+      isLoading = true;
+      reloadButton.disabled = true;
+
+      setStatus(
+        "Supabaseから最新位置を読み込んでいます...",
+        "loading"
+      );
+
       try {
         if (
-          !SUPABASE_KEY.startsWith("sb_publishable_")
+          !SUPABASE_KEY.startsWith(
+            "sb_publishable_"
+          )
         ) {
           throw new Error(
             "Publishable keyを入力してください。"
@@ -143,7 +467,8 @@
           "/rest/v1/team_locations";
 
         const query =
-          "?select=team_id%2Clatitude%2Clongitude%2Caccuracy%2Crecorded_at" +
+          "?select=" +
+          "team_id%2Clatitude%2Clongitude%2Caccuracy%2Crecorded_at" +
           "&team_id=eq." +
           encodeURIComponent(TEAM_ID) +
           "&order=recorded_at.desc" +
@@ -160,7 +485,8 @@
               "Bearer " + SUPABASE_KEY,
             Accept: "application/json",
             "Accept-Profile": "public"
-          }
+          },
+          cache: "no-store"
         });
 
         if (!response.ok) {
@@ -180,16 +506,27 @@
           !Array.isArray(rows) ||
           rows.length === 0
         ) {
-          statusElement.textContent =
-            "接続には成功しましたが、鶴田Aのデータがありません。";
+          recordedAtElement.textContent = "-";
+          accuracyElement.textContent = "-";
+
+          setStatus(
+            "接続には成功しましたが、鶴田Aの位置情報がまだありません。",
+            "warning"
+          );
 
           return;
         }
 
         const row = rows[0];
-        const latitude = Number(row.latitude);
-        const longitude = Number(row.longitude);
-        const accuracy = Number(row.accuracy);
+
+        const latitude =
+          Number(row.latitude);
+
+        const longitude =
+          Number(row.longitude);
+
+        const accuracy =
+          Number(row.accuracy);
 
         if (
           !Number.isFinite(latitude) ||
@@ -205,70 +542,114 @@
           longitude
         ];
 
-        let accuracyText = "不明";
+        const accuracyText =
+          Number.isFinite(accuracy)
+            ? "約" +
+              Math.round(accuracy) +
+              "m"
+            : "不明";
 
-        if (Number.isFinite(accuracy)) {
-          accuracyText =
-            "約" + Math.round(accuracy) + "m";
+        const recordedAtText =
+          formatDateTime(row.recorded_at);
+
+        const ageText =
+          getAgeText(row.recorded_at);
+
+        recordedAtElement.textContent =
+          recordedAtText +
+          (ageText ? "（" + ageText + "）" : "");
+
+        accuracyElement.textContent =
+          accuracyText;
+
+        const popupHtml =
+          "<strong>チーム: " +
+          escapeHtml(row.team_id) +
+          "</strong>" +
+          "<br>精度: " +
+          escapeHtml(accuracyText) +
+          "<br>更新: " +
+          escapeHtml(recordedAtText) +
+          (ageText
+            ? "<br>経過: " +
+              escapeHtml(ageText)
+            : "");
+
+        updateMarker(
+          point,
+          accuracy,
+          popupHtml
+        );
+
+        /*
+         * 最初の取得時だけ地図を現在位置へ移動します。
+         * 2回目以降は、利用者が動かした地図の縮尺を維持します。
+         */
+        if (!map.hasLayer(currentMarker)) {
+          map.setView(point, 17);
         }
-
-        let recordedAtText = "不明";
-
-        if (row.recorded_at) {
-          recordedAtText =
-            new Date(row.recorded_at)
-              .toLocaleString("ja-JP");
-        }
-
-        L.marker(point)
-          .addTo(map)
-          .bindPopup(
-            "<strong>チーム: " +
-            escapeHtml(row.team_id) +
-            "</strong>" +
-            "<br>精度: " +
-            accuracyText +
-            "<br>更新: " +
-            recordedAtText
-          )
-          .openPopup();
 
         if (
-          Number.isFinite(accuracy) &&
-          accuracy >= 0
+          currentMarker &&
+          currentMarker._firstDisplayDone !== true
         ) {
-          L.circle(point, {
-            radius: accuracy,
-            color: "#d93636",
-            fillColor: "#d93636",
-            fillOpacity: 0.15
-          }).addTo(map);
+          map.setView(point, 17);
+          currentMarker._firstDisplayDone = true;
         }
 
-        map.setView(point, 17);
+        if (isStale(row.recorded_at)) {
+          setStatus(
+            "鶴田Aの位置を取得しましたが、最終送信から2分以上経過しています。",
+            "warning"
+          );
+        } else {
+          setStatus(
+            "鶴田Aの最新位置を取得しました。",
+            "success"
+          );
+        }
 
-        setTimeout(function () {
+        window.setTimeout(function () {
           map.invalidateSize();
-        }, 200);
-
-        statusElement.textContent =
-          "Supabaseからテスト位置を取得しました。";
-
-        statusElement.className = "success";
+        }, 100);
       } catch (error) {
         console.error(error);
-        showError(error.message);
+
+        setStatus(
+          "位置を取得できませんでした: " +
+          error.message,
+          "error"
+        );
+      } finally {
+        isLoading = false;
+        reloadButton.disabled = false;
+
+        secondsUntilUpdate =
+          UPDATE_INTERVAL_MS / 1000;
       }
     }
 
-    function escapeHtml(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    function updateCountdown() {
+      countdownElement.textContent =
+        secondsUntilUpdate + "秒";
+
+      secondsUntilUpdate -= 1;
+
+      if (secondsUntilUpdate < 0) {
+        secondsUntilUpdate =
+          UPDATE_INTERVAL_MS / 1000;
+      }
     }
+
+    reloadButton.addEventListener(
+      "click",
+      function () {
+        secondsUntilUpdate =
+          UPDATE_INTERVAL_MS / 1000;
+
+        loadRemoteLocation();
+      }
+    );
 
     window.addEventListener(
       "resize",
@@ -276,15 +657,19 @@
         map.invalidateSize();
       }
     );
-    
-let currentMarker = null;
-let currentCircle = null;
+
     loadRemoteLocation();
+    updateCountdown();
 
-setInterval(function () {
-  loadRemoteLocation();
-}, 30000);
+    window.setInterval(
+      loadRemoteLocation,
+      UPDATE_INTERVAL_MS
+    );
 
+    window.setInterval(
+      updateCountdown,
+      1000
+    );
   </script>
 </body>
 </html>
