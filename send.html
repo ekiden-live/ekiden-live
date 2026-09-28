@@ -36,17 +36,48 @@
       padding: 18px;
       background: #fff;
       border: 1px solid #ddd;
+      border-top: 8px solid #777;
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
 
     h1 {
-      margin: 0 0 16px;
+      margin: 0 0 12px;
       font-size: 1.5rem;
     }
 
     p {
       line-height: 1.7;
+    }
+
+    #teamPanel {
+      margin-bottom: 14px;
+      padding: 12px;
+      background: #f7f7f7;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+    }
+
+    .team-label {
+      color: #555;
+      font-size: 0.85rem;
+    }
+
+    #teamName {
+      display: block;
+      margin-top: 4px;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+
+    #teamClass {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 4px 9px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      background: #eee;
+      border-radius: 999px;
     }
 
     #status {
@@ -60,9 +91,10 @@
     #details {
       margin-top: 12px;
       padding: 12px;
+      overflow-wrap: anywhere;
+      line-height: 1.8;
       background: #f7f7f7;
       border-radius: 6px;
-      line-height: 1.8;
     }
 
     .button-row {
@@ -96,6 +128,13 @@
       background: #b42318;
     }
 
+    #refreshButton {
+      width: 100%;
+      margin-top: 10px;
+      color: #222;
+      background: #e2e6ea;
+    }
+
     .success {
       color: #075f23;
       background: #effff3 !important;
@@ -111,10 +150,21 @@
       background: #eef8ff !important;
     }
 
+    .waiting {
+      color: #795400;
+      background: #fff8df !important;
+    }
+
+    .finished {
+      color: #5c2a00;
+      background: #fff0e5 !important;
+    }
+
     .notice {
       margin-top: 16px;
       padding: 12px;
       font-size: 0.9rem;
+      line-height: 1.7;
       background: #fff8df;
       border-radius: 6px;
     }
@@ -133,40 +183,60 @@
 
 <body>
   <main>
-    <div class="card">
+    <div id="mainCard" class="card">
       <h1>位置情報自動送信</h1>
 
+      <div id="teamPanel">
+        <span class="team-label">送信チーム</span>
+        <span id="teamName">確認中...</span>
+        <span id="teamClass">-</span>
+      </div>
+
       <p>
-        開始ボタンを押すと、30秒ごとに現在位置を取得し送信します。
+        管理者がチームを「競技中」に設定した後、
+        開始ボタンを押してください。
       </p>
 
       <p id="status">
-        「自動送信を開始」を押してください。
+        チーム設定を確認しています...
       </p>
 
       <div id="details">
-        チーム: -<br>
+        管理状態: 確認中<br>
         送信回数: 0回<br>
         最終送信: -<br>
         精度: -
       </div>
 
       <div class="button-row">
-        <button id="startButton" type="button">
+        <button
+          id="startButton"
+          type="button"
+          disabled
+        >
           自動送信を開始
         </button>
 
-        <button id="stopButton" type="button" disabled>
+        <button
+          id="stopButton"
+          type="button"
+          disabled
+        >
           自動送信を停止
         </button>
       </div>
+
+      <button id="refreshButton" type="button">
+        管理状態を再確認
+      </button>
 
       <div class="notice">
         <strong>注意:</strong>
         送信中はこのページを開いたままにしてください。
         画面ロック、別アプリへの切替、省電力機能などにより、
         自動送信が止まる場合があります。
-        使用終了時は必ず停止ボタンを押してください。
+        管理者がゴール処理をすると、
+        次回の状態確認時に自動停止します。
       </div>
 
       <p>
@@ -182,9 +252,81 @@
     const SUPABASE_KEY =
       "sb_publishable_dSckTd34uKOP-zWHbfMsTg_pr74IBgb";
 
-    const TEAM_ID = "鶴田A";
-
     const SEND_INTERVAL_MS = 30000;
+
+    const TEAMS = {
+      "a-yachi-funaki": {
+        name: "宮之城屋地船木",
+        className: "Aクラス",
+        colorName: "紫色",
+        colorCode: "#7B1FA2"
+      },
+      "a-tsuruda": {
+        name: "鶴田A",
+        className: "Aクラス",
+        colorName: "青色",
+        colorCode: "#1565C0"
+      },
+      "a-hotaru": {
+        name: "宮之城ほたるA",
+        className: "Aクラス",
+        colorName: "白色",
+        colorCode: "#FFFFFF"
+      },
+      "a-hokubu": {
+        name: "宮之城北部",
+        className: "Aクラス",
+        colorName: "赤色",
+        colorCode: "#D32F2F"
+      },
+      "b-yamasaki": {
+        name: "宮之城山崎",
+        className: "Bクラス",
+        colorName: "桃色",
+        colorCode: "#EC407A"
+      },
+      "b-satsuma": {
+        name: "薩摩",
+        className: "Bクラス",
+        colorName: "黄色",
+        colorCode: "#F9A825"
+      },
+      "b-tsuruda": {
+        name: "鶴田B",
+        className: "Bクラス",
+        colorName: "緑色",
+        colorCode: "#2E7D32"
+      },
+      "b-hotaru": {
+        name: "宮之城ほたるB",
+        className: "Bクラス",
+        colorName: "茶色",
+        colorCode: "#795548"
+      }
+    };
+
+    const urlParameters =
+      new URLSearchParams(window.location.search);
+
+    const TEAM_ID =
+      urlParameters.get("team") || "";
+
+    const TEAM =
+      Object.prototype.hasOwnProperty.call(
+        TEAMS,
+        TEAM_ID
+      )
+        ? TEAMS[TEAM_ID]
+        : null;
+
+    const mainCard =
+      document.getElementById("mainCard");
+
+    const teamNameElement =
+      document.getElementById("teamName");
+
+    const teamClassElement =
+      document.getElementById("teamClass");
 
     const statusElement =
       document.getElementById("status");
@@ -198,16 +340,60 @@
     const stopButton =
       document.getElementById("stopButton");
 
+    const refreshButton =
+      document.getElementById("refreshButton");
+
     let intervalId = null;
     let isRunning = false;
     let isSending = false;
     let sentCount = 0;
     let lastPosition = null;
     let lastSentAt = null;
+    let currentTeamStatus = null;
+    let finishedAt = null;
 
     function setStatus(message, type) {
       statusElement.textContent = message;
       statusElement.className = type || "";
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function formatDateTime(value) {
+      if (!value) {
+        return "-";
+      }
+
+      const date = new Date(value);
+
+      if (Number.isNaN(date.getTime())) {
+        return "-";
+      }
+
+      return date.toLocaleString("ja-JP");
+    }
+
+    function getStatusText(status) {
+      switch (status) {
+        case "waiting":
+          return "開始前";
+
+        case "active":
+          return "競技中";
+
+        case "finished":
+          return "ゴール済み";
+
+        default:
+          return "確認できません";
+      }
     }
 
     function updateDetails() {
@@ -215,11 +401,15 @@
 
       if (
         lastPosition &&
-        Number.isFinite(lastPosition.coords.accuracy)
+        Number.isFinite(
+          lastPosition.coords.accuracy
+        )
       ) {
         accuracyText =
           "約" +
-          Math.round(lastPosition.coords.accuracy) +
+          Math.round(
+            lastPosition.coords.accuracy
+          ) +
           "m";
       }
 
@@ -228,9 +418,22 @@
           ? lastSentAt.toLocaleString("ja-JP")
           : "-";
 
+      let finishedText = "";
+
+      if (currentTeamStatus === "finished") {
+        finishedText =
+          "<br>ゴール日時: " +
+          escapeHtml(
+            formatDateTime(finishedAt)
+          );
+      }
+
       detailsElement.innerHTML =
-        "チーム: " +
-        escapeHtml(TEAM_ID) +
+        "管理状態: " +
+        escapeHtml(
+          getStatusText(currentTeamStatus)
+        ) +
+        finishedText +
         "<br>送信回数: " +
         sentCount +
         "回" +
@@ -240,8 +443,220 @@
         escapeHtml(accuracyText);
     }
 
+    function showTeamInformation() {
+      if (!TEAM) {
+        mainCard.style.borderTopColor =
+          "#777";
+
+        teamNameElement.textContent =
+          "無効なチームURL";
+
+        teamClassElement.textContent =
+          "チーム未指定";
+
+        return;
+      }
+
+      mainCard.style.borderTopColor =
+        TEAM.colorCode;
+
+      teamNameElement.textContent =
+        TEAM.name +
+        "（" +
+        TEAM.colorName +
+        "）";
+
+      teamClassElement.textContent =
+        TEAM.className;
+
+      if (TEAM.colorCode === "#FFFFFF") {
+        teamPanel.style.borderColor =
+          "#333";
+      }
+    }
+
+    async function fetchTeamStatus() {
+      if (!TEAM) {
+        throw new Error(
+          "URLに正しいチームが指定されていません。"
+        );
+      }
+
+      const query =
+        "?select=team_id%2Cstatus%2Cfinished_at" +
+        "&team_id=eq." +
+        encodeURIComponent(TEAM_ID) +
+        "&limit=1";
+
+      const endpoint =
+        SUPABASE_URL +
+        "/rest/v1/team_status" +
+        query;
+
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization:
+            "Bearer " + SUPABASE_KEY,
+          Accept: "application/json",
+          "Accept-Profile": "public"
+        },
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        const responseText =
+          await response.text();
+
+        throw new Error(
+          "状態確認 HTTP " +
+          response.status +
+          ": " +
+          responseText
+        );
+      }
+
+      const rows = await response.json();
+
+      if (
+        !Array.isArray(rows) ||
+        rows.length === 0
+      ) {
+        throw new Error(
+          "チームの管理状態が登録されていません。"
+        );
+      }
+
+      currentTeamStatus =
+        rows[0].status;
+
+      finishedAt =
+        rows[0].finished_at || null;
+
+      updateDetails();
+
+      return currentTeamStatus;
+    }
+
+    function stopAutomaticSending(
+      message,
+      type
+    ) {
+      isRunning = false;
+
+      if (intervalId !== null) {
+        window.clearInterval(intervalId);
+        intervalId = null;
+      }
+
+      stopButton.disabled = true;
+
+      if (currentTeamStatus === "active") {
+        startButton.disabled = false;
+      } else {
+        startButton.disabled = true;
+      }
+
+      setStatus(
+        message || "自動送信を停止しました。",
+        type || ""
+      );
+    }
+
+    function applyTeamStatus(status) {
+      currentTeamStatus = status;
+      updateDetails();
+
+      if (status === "waiting") {
+        if (isRunning) {
+          stopAutomaticSending(
+            "管理状態が開始前に変更されたため、送信を停止しました。",
+            "waiting"
+          );
+        } else {
+          startButton.disabled = true;
+          stopButton.disabled = true;
+
+          setStatus(
+            "現在は開始前です。管理者が「競技中」に変更してから、再確認してください。",
+            "waiting"
+          );
+        }
+
+        return;
+      }
+
+      if (status === "active") {
+        if (isRunning) {
+          startButton.disabled = true;
+          stopButton.disabled = false;
+
+          setStatus(
+            "自動送信中です。30秒後に再送信します。",
+            "success"
+          );
+        } else {
+          startButton.disabled = false;
+          stopButton.disabled = true;
+
+          setStatus(
+            "競技中です。「自動送信を開始」を押してください。",
+            "success"
+          );
+        }
+
+        return;
+      }
+
+      if (status === "finished") {
+        if (isRunning) {
+          stopAutomaticSending(
+            "管理者がゴール処理を行いました。位置情報の送信を自動停止しました。",
+            "finished"
+          );
+        } else {
+          startButton.disabled = true;
+          stopButton.disabled = true;
+
+          setStatus(
+            "このチームはゴール済みです。位置情報は送信できません。",
+            "finished"
+          );
+        }
+
+        return;
+      }
+
+      stopAutomaticSending(
+        "管理状態を確認できないため、送信を停止しました。",
+        "error"
+      );
+    }
+
+    async function checkTeamStatus(
+      showCheckingMessage
+    ) {
+      if (showCheckingMessage) {
+        setStatus(
+          "管理状態を確認しています...",
+          "running"
+        );
+      }
+
+      const status =
+        await fetchTeamStatus();
+
+      applyTeamStatus(status);
+
+      return status;
+    }
+
     function getCurrentPosition() {
-      return new Promise(function (resolve, reject) {
+      return new Promise(function (
+        resolve,
+        reject
+      ) {
         navigator.geolocation.getCurrentPosition(
           resolve,
           reject,
@@ -261,10 +676,14 @@
 
       const payload = {
         team_id: TEAM_ID,
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        accuracy: position.coords.accuracy,
-        recorded_at: new Date().toISOString()
+        latitude:
+          position.coords.latitude,
+        longitude:
+          position.coords.longitude,
+        accuracy:
+          position.coords.accuracy,
+        recorded_at:
+          new Date().toISOString()
       };
 
       const response = await fetch(endpoint, {
@@ -273,7 +692,8 @@
           apikey: SUPABASE_KEY,
           Authorization:
             "Bearer " + SUPABASE_KEY,
-          "Content-Type": "application/json",
+          "Content-Type":
+            "application/json",
           Accept: "application/json",
           "Content-Profile": "public",
           Prefer: "return=minimal"
@@ -286,7 +706,7 @@
           await response.text();
 
         throw new Error(
-          "HTTP " +
+          "位置送信 HTTP " +
           response.status +
           ": " +
           responseText
@@ -326,6 +746,19 @@
 
       try {
         setStatus(
+          "管理状態を確認しています...",
+          "running"
+        );
+
+        const teamStatus =
+          await fetchTeamStatus();
+
+        if (teamStatus !== "active") {
+          applyTeamStatus(teamStatus);
+          return;
+        }
+
+        setStatus(
           "現在位置を取得して送信しています...",
           "running"
         );
@@ -337,8 +770,22 @@
             await getCurrentPosition();
         } catch (locationError) {
           throw new Error(
-            getLocationErrorMessage(locationError)
+            getLocationErrorMessage(
+              locationError
+            )
           );
+        }
+
+        /*
+         * 位置取得中に管理者がゴール処理を行う場合に備え、
+         * 送信直前にもう一度状態を確認します。
+         */
+        const latestStatus =
+          await fetchTeamStatus();
+
+        if (latestStatus !== "active") {
+          applyTeamStatus(latestStatus);
+          return;
         }
 
         await insertLocation(position);
@@ -356,19 +803,21 @@
       } catch (error) {
         console.error(error);
 
-        setStatus(
-          "今回の送信に失敗しました: " +
-          error.message +
-          " 30秒後に再試行します。",
-          "error"
-        );
+        if (isRunning) {
+          setStatus(
+            "今回の処理に失敗しました: " +
+            error.message +
+            " 30秒後に再試行します。",
+            "error"
+          );
+        }
       } finally {
         isSending = false;
       }
     }
 
     async function startAutomaticSending() {
-      if (isRunning) {
+      if (isRunning || !TEAM) {
         return;
       }
 
@@ -395,6 +844,30 @@
           );
         }
 
+        setStatus(
+          "管理状態を確認しています...",
+          "running"
+        );
+
+        const teamStatus =
+          await fetchTeamStatus();
+
+        if (teamStatus === "waiting") {
+          applyTeamStatus(teamStatus);
+          return;
+        }
+
+        if (teamStatus === "finished") {
+          applyTeamStatus(teamStatus);
+          return;
+        }
+
+        if (teamStatus !== "active") {
+          throw new Error(
+            "管理状態が正しくありません。"
+          );
+        }
+
         isRunning = true;
         sentCount = 0;
         lastPosition = null;
@@ -405,17 +878,14 @@
 
         updateDetails();
 
-        setStatus(
-          "自動送信を開始します...",
-          "running"
-        );
-
         await sendLocationOnce();
 
-        intervalId = window.setInterval(
-          sendLocationOnce,
-          SEND_INTERVAL_MS
-        );
+        if (isRunning) {
+          intervalId = window.setInterval(
+            sendLocationOnce,
+            SEND_INTERVAL_MS
+          );
+        }
       } catch (error) {
         console.error(error);
 
@@ -431,30 +901,67 @@
       }
     }
 
-    function stopAutomaticSending() {
-      isRunning = false;
+    async function refreshTeamStatus() {
+      refreshButton.disabled = true;
 
-      if (intervalId !== null) {
-        window.clearInterval(intervalId);
-        intervalId = null;
+      try {
+        await checkTeamStatus(true);
+      } catch (error) {
+        console.error(error);
+
+        if (isRunning) {
+          stopAutomaticSending(
+            "管理状態を確認できないため、送信を停止しました: " +
+            error.message,
+            "error"
+          );
+        } else {
+          startButton.disabled = true;
+
+          setStatus(
+            "管理状態を確認できませんでした: " +
+            error.message,
+            "error"
+          );
+        }
+      } finally {
+        refreshButton.disabled = false;
       }
-
-      startButton.disabled = false;
-      stopButton.disabled = true;
-
-      setStatus(
-        "自動送信を停止しました。",
-        ""
-      );
     }
 
-    function escapeHtml(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+    async function initialize() {
+      showTeamInformation();
+      updateDetails();
+
+      if (!TEAM) {
+        startButton.disabled = true;
+        stopButton.disabled = true;
+        refreshButton.disabled = true;
+
+        setStatus(
+          "無効なチームURLです。配布された正しいURLを開いてください。",
+          "error"
+        );
+
+        return;
+      }
+
+      if (
+        !SUPABASE_KEY.startsWith(
+          "sb_publishable_"
+        )
+      ) {
+        startButton.disabled = true;
+
+        setStatus(
+          "Publishable keyが設定されていません。",
+          "error"
+        );
+
+        return;
+      }
+
+      await refreshTeamStatus();
     }
 
     startButton.addEventListener(
@@ -464,7 +971,17 @@
 
     stopButton.addEventListener(
       "click",
-      stopAutomaticSending
+      function () {
+        stopAutomaticSending(
+          "自動送信を停止しました。",
+          ""
+        );
+      }
+    );
+
+    refreshButton.addEventListener(
+      "click",
+      refreshTeamStatus
     );
 
     window.addEventListener(
@@ -476,7 +993,7 @@
       }
     );
 
-    updateDetails();
+    initialize();
   </script>
 </body>
 </html>
