@@ -833,9 +833,18 @@
 
         card.className = "team-card";
 
-        card.style.setProperty(
-          "--team-color",
-          team.colorCode
+        if (
+         team.colorCode.toUpperCase() ===
+         "#FFFFFF"
+      ) {
+         card.classList.add(
+           "team-color-white"
+        );
+       }
+
+       card.style.setProperty(
+         "--team-color",
+         team.colorCode
         );
 
         card.innerHTML =
