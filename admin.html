@@ -82,7 +82,8 @@
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .panel h2 {
@@ -116,7 +117,8 @@
     }
 
     input:focus {
-      outline: 3px solid rgba(21, 79, 125, 0.2);
+      outline:
+        3px solid rgba(21, 79, 125, 0.2);
       border-color: var(--primary);
     }
 
@@ -224,34 +226,52 @@
       gap: 10px;
     }
 
+    /*
+     * 共通カード:
+     * 左側のチームカラー帯を外枠とは別要素で表示します。
+     */
     .team-card {
+      position: relative;
       min-width: 0;
-      padding: 14px;
+      padding: 14px 14px 14px 21px;
+      overflow: hidden;
       border: 1px solid var(--border);
-      border-left:
-        7px solid
-        var(--team-color, #777);
       border-radius: 9px;
       background: #fff;
     }
-    
-    .team-card.team-color-white {
-  position: relative;
-  border-left-color: #d6dde3;
-}
 
-.team-card.team-color-white::before {
-  content: "";
-  position: absolute;
-  top: 1px;
-  bottom: 1px;
-  left: 1px;
-  width: 6px;
-  background: #fff;
-  border-right: 1px solid #d6dde3;
-  border-radius: 7px 0 0 7px;
-  pointer-events: none;
-}
+    /*
+     * 全チーム共通のカラー帯です。
+     * 外枠の内側へ配置するため、外枠と重なりません。
+     */
+    .team-card::before {
+      content: "";
+      position: absolute;
+      z-index: 0;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 7px;
+      background: var(--team-color, #777);
+      pointer-events: none;
+    }
+
+    /*
+     * 白色チームだけ、白帯の右端に薄い線を付けます。
+     * 線は白帯の一部として内側に描画されます。
+     */
+    .team-card[data-white-team="true"]::before {
+      box-shadow:
+        inset -1px 0 0 #aeb9c2;
+    }
+
+    /*
+     * カード内容をカラー帯より手前に表示します。
+     */
+    .team-card > * {
+      position: relative;
+      z-index: 1;
+    }
 
     .team-card h3 {
       margin: 0 0 8px;
@@ -475,7 +495,7 @@
       "administrator";
 
     const AUTH_EMAIL =
-      "sm.1125.shinji@gmail.com";
+      "ここに現在のGmailアドレス";
 
     const TEAMS = [
       {
@@ -660,6 +680,26 @@
       }
     }
 
+    function normalizeColor(value) {
+      return String(value || "")
+        .trim()
+        .replace(/\s+/g, "")
+        .toUpperCase();
+    }
+
+    function isWhiteColor(value) {
+      const color =
+        normalizeColor(value);
+
+      return (
+        color === "#FFFFFF" ||
+        color === "#FFF" ||
+        color === "WHITE" ||
+        color === "RGB(255,255,255)" ||
+        color === "RGBA(255,255,255,1)"
+      );
+    }
+
     function setLoginMessage(
       text,
       type
@@ -841,21 +881,22 @@
             "article"
           );
 
+        const teamColor =
+          String(
+            team.colorCode || "#777777"
+          ).trim();
+
         card.className = "team-card";
 
-        if (
-         team.colorCode.toUpperCase() ===
-         "#FFFFFF"
-      ) {
-         card.classList.add(
-           "team-color-white"
+        card.style.setProperty(
+          "--team-color",
+          teamColor
         );
-       }
 
-       card.style.setProperty(
-         "--team-color",
-         team.colorCode
-        );
+        if (isWhiteColor(teamColor)) {
+          card.dataset.whiteTeam =
+            "true";
+        }
 
         card.innerHTML =
           "<h3>" +
@@ -997,7 +1038,8 @@
           updateValues.finished_at =
             new Date().toISOString();
         } else {
-          updateValues.finished_at = null;
+          updateValues.finished_at =
+            null;
         }
 
         const {
