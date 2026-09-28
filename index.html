@@ -126,44 +126,20 @@
       opacity: 0.55;
     }
 
-    #map {
+   #map {
   position: relative;
   display: block;
   width: 100%;
   max-width: 100%;
-  height: 620px;
+  height: 58vh;
   min-height: 420px;
+  max-height: 620px;
   overflow: hidden;
   background: #dfe8ee;
   border: 1px solid #bfcbd4;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
-
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 16px;
-      margin: 12px 0 18px;
-      padding: 11px 13px;
-      font-size: 0.9rem;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-    }
-
-    .legend-item {
-      display: inline-flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .legend-dot {
-      width: 13px;
-      height: 13px;
-      border: 2px solid #333;
-      border-radius: 50%;
-    }
 
     .class-section {
       margin-top: 18px;
@@ -182,21 +158,21 @@
     }
 
     .team-grid {
-      display: grid;
-      grid-template-columns:
-        repeat(auto-fit, minmax(270px, 1fr));
-      gap: 12px;
-    }
+  display: grid;
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
 
-    .team-card {
-      position: relative;
-      min-width: 0;
-      padding: 14px 14px 14px 18px;
-      overflow: hidden;
-      background: #fff;
-      border: 1px solid var(--border);
-      border-radius: 9px;
-    }
+.team-card {
+  position: relative;
+  min-width: 0;
+  padding: 12px 10px 12px 16px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+}
 
     .team-card::before {
       position: absolute;
@@ -249,47 +225,6 @@
     .status-unknown {
       color: #555;
       background: #e9ecef;
-    }
-
-    .team-information {
-      margin-top: 10px;
-      color: #34424e;
-      font-size: 0.92rem;
-      line-height: 1.75;
-      overflow-wrap: anywhere;
-    }
-
-    .communication-normal {
-      color: #08752b;
-      font-weight: bold;
-    }
-
-    .communication-warning {
-      color: #9a6100;
-      font-weight: bold;
-    }
-
-    .communication-stale {
-      color: #b42318;
-      font-weight: bold;
-    }
-
-    .communication-none {
-      color: #66737f;
-      font-weight: bold;
-    }
-
-    .focus-button {
-      width: 100%;
-      margin-top: 10px;
-      min-height: 40px;
-      color: #fff;
-      background: #465b6d;
-    }
-
-    .focus-button:disabled {
-      color: #555;
-      background: #dfe3e6;
     }
 
     .error-message {
@@ -356,11 +291,33 @@
     }
 
         @media (max-width: 600px) {
-  #map {
-    width: 100%;
-    height: 480px;
-    min-height: 0;
-  }
+ #map {
+  height: 50vh;
+  min-height: 330px;
+  max-height: 480px;
+}
+          
+      .team-grid {
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.team-card {
+  padding: 10px 8px 10px 14px;
+}
+
+.team-card-header {
+  display: block;
+}
+
+.status-badge {
+  display: inline-block;
+  margin-top: 7px;
+}
+
+.team-name {
+  font-size: 0.9rem;
 }
 
       .page-header {
@@ -388,7 +345,6 @@
     /* 地図の横幅・はみ出し防止 */
     main,
     .control-panel,
-    .legend,
     .class-section,
     #map {
       min-width: 0;
@@ -596,6 +552,12 @@
 .leaflet-container img.leaflet-marker-shadow {
   max-width: none !important;
 }
+    
+@media (max-width: 360px) {
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
   </style>
 
@@ -621,9 +583,6 @@
           今すぐ更新
         </button>
 
-        <button id="fitButton" type="button">
-          全チームを表示
-        </button>
       </div>
     </section>
 
@@ -632,37 +591,6 @@
       role="application"
       aria-label="チーム位置情報地図"
     ></div>
-
-    <div class="legend" aria-label="通信状態の凡例">
-      <span class="legend-item">
-        <span
-          class="legend-dot"
-          style="background:#2e7d32"
-        ></span>
-        2分以内
-      </span>
-
-      <span class="legend-item">
-        <span
-          class="legend-dot"
-          style="background:#f9a825"
-        ></span>
-        2分超～5分以内
-      </span>
-
-      <span class="legend-item">
-        <span
-          class="legend-dot"
-          style="background:#d32f2f"
-        ></span>
-        5分超
-      </span>
-
-      <span>
-        ※マーカーの色はチームカラーです。
-        一覧に通信状態を表示します。
-      </span>
-    </div>
 
     <section class="class-section">
       <h2>Aクラス</h2>
@@ -776,9 +704,6 @@
 
     const refreshButton =
       document.getElementById("refreshButton");
-
-    const fitButton =
-      document.getElementById("fitButton");
 
     const classAList =
       document.getElementById("classAList");
@@ -968,58 +893,50 @@
       };
     }
 
-    function createTeamCards() {
-      TEAMS.forEach(function (team) {
-        const card =
-          document.createElement("article");
+function createTeamCards() {
+  TEAMS.forEach(function (team) {
+    const card =
+      document.createElement("article");
 
-        card.className = "team-card";
-        card.dataset.teamId = team.id;
-        card.style.setProperty(
-          "--team-color",
-          team.colorCode
-        );
+    card.className = "team-card";
+    card.dataset.teamId = team.id;
+    card.style.setProperty(
+      "--team-color",
+      team.colorCode
+    );
 
-        if (
-          team.colorCode === "#FFFFFF" ||
-          team.colorCode === "#F9A825"
-        ) {
-          card.style.setProperty(
-            "--team-color-border",
-            "1px solid #444"
-          );
-        }
+    if (
+      team.colorCode === "#FFFFFF" ||
+      team.colorCode === "#F9A825"
+    ) {
+      card.style.setProperty(
+        "--team-color-border",
+        "1px solid #444"
+      );
+    }
 
-        card.innerHTML =
-          '<div class="team-card-header">' +
-            '<div class="team-name">' +
-              escapeHtml(team.name) +
-              "（" +
-              escapeHtml(team.colorName) +
-              "）" +
-            "</div>" +
-            '<span class="status-badge status-unknown">' +
-              "確認中" +
-            "</span>" +
-          "</div>" +
-          '<div class="team-information">' +
-            "通信状態: 確認中<br>" +
-            "最終送信: -<br>" +
-            "経過時間: -<br>" +
-            "位置精度: -" +
-          "</div>" +
-          '<button class="focus-button" ' +
-            'type="button" disabled>' +
-            "地図で見る" +
-          "</button>";
+    card.innerHTML =
+      '<div class="team-card-header">' +
+        '<div class="team-name">' +
+          escapeHtml(team.name) +
+          "（" +
+          escapeHtml(team.colorName) +
+          "）" +
+        "</div>" +
+        '<span class="status-badge status-unknown">' +
+          "確認中" +
+        "</span>" +
+      "</div>";
 
-        const target =
-          team.className === "A"
-            ? classAList
-            : classBList;
+    const target =
+      team.className === "A"
+        ? classAList
+        : classBList;
 
-        target.appendChild(card);
-        teamCards.set(team.id, card);
+    target.appendChild(card);
+    teamCards.set(team.id, card);
+  });
+}
 
         const focusButton =
           card.querySelector(".focus-button");
@@ -1388,39 +1305,30 @@
       }
     }
 
-    function updateTeamCard(state) {
-      const card =
-        teamCards.get(state.team.id);
+function updateTeamCard(state) {
+  const card =
+    teamCards.get(state.team.id);
 
-      if (!card) {
-        return;
-      }
+  if (!card) {
+    return;
+  }
 
-      const statusBadge =
-        card.querySelector(
-          ".status-badge"
-        );
+  const statusBadge =
+    card.querySelector(
+      ".status-badge"
+    );
 
-      const information =
-        card.querySelector(
-          ".team-information"
-        );
+  statusBadge.className =
+    "status-badge " +
+    getManagementStatusClass(
+      state.status
+    );
 
-      const focusButton =
-        card.querySelector(
-          ".focus-button"
-        );
-
-      statusBadge.className =
-        "status-badge " +
-        getManagementStatusClass(
-          state.status
-        );
-
-      statusBadge.textContent =
-        getManagementStatusText(
-          state.status
-        );
+  statusBadge.textContent =
+    getManagementStatusText(
+      state.status
+    );
+}
 
       const location = state.location;
 
@@ -1688,18 +1596,6 @@
       "click",
       refreshAllData
     );
-
-    fitButton.addEventListener(
-  "click",
-  function () {
-    map.invalidateSize();
-
-    window.setTimeout(
-      fitAllTeams,
-      100
-    );
-  }
-);
 
     refreshAllData();
 
