@@ -302,6 +302,7 @@
     repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
+}
 
 .team-card {
   padding: 10px 8px 10px 14px;
@@ -900,6 +901,7 @@ function createTeamCards() {
 
     card.className = "team-card";
     card.dataset.teamId = team.id;
+
     card.style.setProperty(
       "--team-color",
       team.colorCode
@@ -934,19 +936,14 @@ function createTeamCards() {
         : classBList;
 
     target.appendChild(card);
-    teamCards.set(team.id, card);
+
+    teamCards.set(
+      team.id,
+      card
+    );
   });
 }
 
-        const focusButton =
-          card.querySelector(".focus-button");
-
-        focusButton.addEventListener(
-          "click",
-          function () {
-            focusTeamOnMap(team.id);
-          }
-        );
       });
     }
 
@@ -1318,6 +1315,10 @@ function updateTeamCard(state) {
       ".status-badge"
     );
 
+  if (!statusBadge) {
+    return;
+  }
+
   statusBadge.className =
     "status-badge " +
     getManagementStatusClass(
@@ -1590,20 +1591,21 @@ function updateTeamCard(state) {
       }
     }
 
-    createTeamCards();
+   createTeamCards();
 
-    refreshButton.addEventListener(
-      "click",
-      refreshAllData
-    );
+refreshButton.addEventListener(
+  "click",
+  refreshAllData
+);
 
-    refreshAllData();
+refreshAllData();
 
-    window.setInterval(
-      refreshAllData,
-      REFRESH_INTERVAL_MS
-    );
-    let resizeTimer = null;
+window.setInterval(
+  refreshAllData,
+  REFRESH_INTERVAL_MS
+);
+
+let resizeTimer = null;
 
 window.addEventListener(
   "resize",
@@ -1633,6 +1635,7 @@ window.addEventListener(
     );
   }
 );
+
   </script>
 </body>
 </html>
