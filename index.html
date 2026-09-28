@@ -13,9 +13,20 @@
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQ3ynPC1Q5BVbMZFRyMZLZA3uZ1C8w="
+    crossorigin=""
   >
 
   <style>
+    :root {
+      --primary: #154f7d;
+      --primary-dark: #0d3555;
+      --page-background: #eef2f5;
+      --border: #d6dde3;
+      --text: #1d2730;
+      --muted: #66737f;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -25,310 +36,569 @@
       width: 100%;
       margin: 0;
       padding: 0;
-      overflow-x: hidden;
-      font-family: sans-serif;
-      color: #222;
-      background: #f5f7f9;
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Hiragino Kaku Gothic ProN",
+        "Yu Gothic",
+        Meiryo,
+        sans-serif;
+      background: var(--page-background);
+    }
+
+    .page-header {
+      padding: 24px 16px;
+      color: #fff;
+      text-align: center;
+      background:
+        linear-gradient(
+          135deg,
+          var(--primary-dark),
+          var(--primary)
+        );
+      border-bottom: 5px solid #f2c94c;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      font-size: clamp(1.7rem, 5vw, 3rem);
+      line-height: 1.35;
+      letter-spacing: 0.04em;
+    }
+
+    .page-header p {
+      margin: 8px 0 0;
+      font-size: clamp(0.95rem, 2vw, 1.15rem);
+      opacity: 0.95;
     }
 
     main {
-      width: 100%;
-      max-width: 900px;
+      width: min(1400px, 100%);
       margin: 0 auto;
-      padding: 12px;
+      padding: 16px;
     }
 
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 1.4rem;
-    }
-
-    .team-name {
-      color: #075ea8;
-    }
-
-    #status {
-      width: 100%;
-      margin: 0 0 10px;
-      padding: 10px;
-      overflow-wrap: anywhere;
-      background: #f2f2f2;
-      border-radius: 6px;
-    }
-
-    #information {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .information-item {
-      min-width: 0;
-      padding: 10px;
-      overflow-wrap: anywhere;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-    }
-
-    .information-label {
-      display: block;
-      margin-bottom: 4px;
-      color: #555;
-      font-size: 0.8rem;
-    }
-
-    .information-value {
-      font-weight: bold;
-    }
-
-    #map {
-      display: block;
-      width: 100%;
-      height: 60vh;
-      min-height: 320px;
-      max-height: 650px;
-      border: 1px solid #aaa;
-      border-radius: 6px;
-      overflow: hidden;
-      background: #ddd;
-    }
-
-    .actions {
+    .control-panel {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 12px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 12px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
-    button,
-    .link-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    #overallStatus {
+      flex: 1 1 320px;
+      min-width: 0;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .control-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    button {
       min-height: 44px;
-      padding: 10px 16px;
+      padding: 9px 14px;
       color: #fff;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: bold;
-      text-decoration: none;
-      background: #1769aa;
       border: 0;
-      border-radius: 6px;
+      border-radius: 7px;
+      background: var(--primary);
       cursor: pointer;
+    }
+
+    button:hover {
+      filter: brightness(0.95);
     }
 
     button:disabled {
       cursor: not-allowed;
-      opacity: 0.6;
+      opacity: 0.55;
     }
 
-    .success {
-      color: #075f23;
-      background: #effff3 !important;
+    #map {
+      width: 100%;
+      height: min(65vh, 720px);
+      min-height: 420px;
+      background: #dfe8ee;
+      border: 1px solid #bfcbd4;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
     }
 
-    .error {
-      color: #b00020;
-      background: #fff0f0 !important;
-    }
-
-    .warning {
-      color: #795400;
-      background: #fff8df !important;
-    }
-
-    .loading {
-      color: #084f83;
-      background: #eef8ff !important;
-    }
-
-    .notice {
-      margin-top: 12px;
-      padding: 10px;
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 16px;
+      margin: 12px 0 18px;
+      padding: 11px 13px;
       font-size: 0.9rem;
-      line-height: 1.6;
-      background: #fff8df;
-      border-radius: 6px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .legend-dot {
+      width: 13px;
+      height: 13px;
+      border: 2px solid #333;
+      border-radius: 50%;
+    }
+
+    .class-section {
+      margin-top: 18px;
+      padding: 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .class-section h2 {
+      margin: 0 0 14px;
+      padding-bottom: 8px;
+      font-size: 1.35rem;
+      border-bottom: 3px solid var(--primary);
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(270px, 1fr));
+      gap: 12px;
+    }
+
+    .team-card {
+      position: relative;
+      min-width: 0;
+      padding: 14px 14px 14px 18px;
+      overflow: hidden;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+    }
+
+    .team-card::before {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 7px;
+      content: "";
+      background: var(--team-color, #777);
+      border-right: var(--team-color-border, 0);
+    }
+
+    .team-card-header {
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .team-name {
+      min-width: 0;
+      font-size: 1.08rem;
+      font-weight: bold;
+      overflow-wrap: anywhere;
+    }
+
+    .status-badge {
+      flex: 0 0 auto;
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      font-weight: bold;
+      border-radius: 999px;
+    }
+
+    .status-waiting {
+      color: #624a00;
+      background: #fff0ad;
+    }
+
+    .status-active {
+      color: #075f23;
+      background: #dff8e6;
+    }
+
+    .status-finished {
+      color: #713800;
+      background: #ffe5ce;
+    }
+
+    .status-unknown {
+      color: #555;
+      background: #e9ecef;
+    }
+
+    .team-information {
+      margin-top: 10px;
+      color: #34424e;
+      font-size: 0.92rem;
+      line-height: 1.75;
+      overflow-wrap: anywhere;
+    }
+
+    .communication-normal {
+      color: #08752b;
+      font-weight: bold;
+    }
+
+    .communication-warning {
+      color: #9a6100;
+      font-weight: bold;
+    }
+
+    .communication-stale {
+      color: #b42318;
+      font-weight: bold;
+    }
+
+    .communication-none {
+      color: #66737f;
+      font-weight: bold;
+    }
+
+    .focus-button {
+      width: 100%;
+      margin-top: 10px;
+      min-height: 40px;
+      color: #fff;
+      background: #465b6d;
+    }
+
+    .focus-button:disabled {
+      color: #555;
+      background: #dfe3e6;
+    }
+
+    .error-message {
+      color: #b00020;
+      font-weight: bold;
+    }
+
+    .map-team-icon {
+      background: transparent;
+      border: 0;
+    }
+
+    .marker-wrapper {
+      display: flex;
+      align-items: center;
+    }
+
+    .marker-dot {
+      flex: 0 0 auto;
+      width: 25px;
+      height: 25px;
+      border: 3px solid #222;
+      border-radius: 50%;
+      box-shadow:
+        0 1px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .marker-label {
+      max-width: 190px;
+      margin-left: 5px;
+      padding: 3px 7px;
+      color: #111;
+      font-size: 12px;
+      font-weight: bold;
+      line-height: 1.35;
+      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid #333;
+      border-radius: 5px;
+      box-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .marker-finished .marker-dot {
+      border-style: double;
+      border-width: 5px;
+    }
+
+    .marker-stale {
+      opacity: 0.55;
+    }
+
+    .leaflet-popup-content {
+      line-height: 1.7;
+    }
+
+    footer {
+      padding: 22px 16px 30px;
+      color: #66737f;
+      font-size: 0.85rem;
+      text-align: center;
     }
 
     @media (max-width: 600px) {
       main {
-        padding: 8px;
+        padding: 10px;
       }
 
-      .header {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      #information {
-        grid-template-columns: 1fr;
+      .page-header {
+        padding: 19px 10px;
       }
 
       #map {
-        height: 55vh;
-        min-height: 300px;
+        height: 57vh;
+        min-height: 360px;
       }
 
-      button,
-      .link-button {
+      .control-buttons {
         width: 100%;
+      }
+
+      .control-buttons button {
+        flex: 1 1 140px;
+      }
+
+      .class-section {
+        padding: 12px;
       }
     }
   </style>
 </head>
 
 <body>
+  <header class="page-header">
+    <h1>第22回さつま町駅伝競走大会</h1>
+    <p>チーム位置情報・運行状況</p>
+  </header>
+
   <main>
-    <div class="header">
-      <h1>
-        チーム
-        の最新位置
-      </h1>
-    </div>
-
-    <p id="status">
-      位置情報を読み込んでいます...
-    </p>
-
-    <div id="information">
-      <div class="information-item">
-        <span class="information-label">
-          最終位置送信
-        </span>
-
-        <span
-          id="recordedAt"
-          class="information-value"
-        >
-          -
-        </span>
+    <section
+      class="control-panel"
+      aria-label="更新状況と操作"
+    >
+      <div id="overallStatus">
+        データを読み込んでいます...
       </div>
 
-      <div class="information-item">
-        <span class="information-label">
-          位置精度
-        </span>
+      <div class="control-buttons">
+        <button id="refreshButton" type="button">
+          今すぐ更新
+        </button>
 
-        <span
-          id="accuracy"
-          class="information-value"
-        >
-          -
-        </span>
+        <button id="fitButton" type="button">
+          全チームを表示
+        </button>
       </div>
+    </section>
 
-      <div class="information-item">
-        <span class="information-label">
-          次回自動更新
-        </span>
+    <div
+      id="map"
+      role="application"
+      aria-label="チーム位置情報地図"
+    ></div>
 
+    <div class="legend" aria-label="通信状態の凡例">
+      <span class="legend-item">
         <span
-          id="countdown"
-          class="information-value"
-        >
-          -
-        </span>
-      </div>
+          class="legend-dot"
+          style="background:#2e7d32"
+        ></span>
+        2分以内
+      </span>
+
+      <span class="legend-item">
+        <span
+          class="legend-dot"
+          style="background:#f9a825"
+        ></span>
+        2分超～5分以内
+      </span>
+
+      <span class="legend-item">
+        <span
+          class="legend-dot"
+          style="background:#d32f2f"
+        ></span>
+        5分超
+      </span>
+
+      <span>
+        ※マーカーの色はチームカラーです。
+        一覧に通信状態を表示します。
+      </span>
     </div>
 
-    <div id="map"></div>
+    <section class="class-section">
+      <h2>Aクラス</h2>
+      <div id="classAList" class="team-grid"></div>
+    </section>
 
-    <div class="actions">
-      <button id="reloadButton" type="button">
-        今すぐ更新
-      </button>
-
-      <a
-        class="link-button"
-        href="./send.html"
-      >
-        位置送信ページを開く
-      </a>
-    </div>
-
-    <div class="notice">
-      この地図は30秒ごとに自動更新します。
-      スマートフォン側の送信が停止している場合、
-      マーカーの位置は変わりません。
-    </div>
+    <section class="class-section">
+      <h2>Bクラス</h2>
+      <div id="classBList" class="team-grid"></div>
+    </section>
   </main>
+
+  <footer>
+    位置情報は通信状況や端末設定により、
+    実際の位置と異なる場合があります。
+  </footer>
 
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
   ></script>
 
   <script>
     const SUPABASE_URL =
       "https://tmxmmikcgzdcyyotkiex.supabase.co";
 
-    /*
-     * 現在使用しているPublishable keyを入力してください。
-     * Secret keyやservice_roleは使用しないでください。
-     */
     const SUPABASE_KEY =
       "sb_publishable_dSckTd34uKOP-zWHbfMsTg_pr74IBgb";
 
-    const TEAM_ID = "鶴田A";
-
-    const UPDATE_INTERVAL_MS = 30000;
+    const REFRESH_INTERVAL_MS = 30000;
+    const NORMAL_LIMIT_MS = 2 * 60 * 1000;
+    const WARNING_LIMIT_MS = 5 * 60 * 1000;
 
     /*
-     * 最終位置送信から2分を超えた場合に、
-     * 「位置情報が古い可能性があります」と表示します。
+     * 全チームの位置がまだない場合に表示する初期位置です。
+     * さつま町周辺を表示するための概略中心です。
      */
-    const STALE_TIME_MS = 120000;
+    const DEFAULT_MAP_CENTER = [
+      31.9,
+      130.45
+    ];
 
-    const statusElement =
-      document.getElementById("status");
+    const DEFAULT_MAP_ZOOM = 11;
 
-    const recordedAtElement =
-      document.getElementById("recordedAt");
+    const TEAMS = [
+      {
+        id: "a-yachi-funaki",
+        name: "宮之城屋地船木",
+        className: "A",
+        colorName: "紫色",
+        colorCode: "#7B1FA2"
+      },
+      {
+        id: "a-tsuruda",
+        name: "鶴田A",
+        className: "A",
+        colorName: "青色",
+        colorCode: "#1565C0"
+      },
+      {
+        id: "a-hotaru",
+        name: "宮之城ほたるA",
+        className: "A",
+        colorName: "白色",
+        colorCode: "#FFFFFF"
+      },
+      {
+        id: "a-hokubu",
+        name: "宮之城北部",
+        className: "A",
+        colorName: "赤色",
+        colorCode: "#D32F2F"
+      },
+      {
+        id: "b-yamasaki",
+        name: "宮之城山崎",
+        className: "B",
+        colorName: "桃色",
+        colorCode: "#EC407A"
+      },
+      {
+        id: "b-satsuma",
+        name: "薩摩",
+        className: "B",
+        colorName: "黄色",
+        colorCode: "#F9A825"
+      },
+      {
+        id: "b-tsuruda",
+        name: "鶴田B",
+        className: "B",
+        colorName: "緑色",
+        colorCode: "#2E7D32"
+      },
+      {
+        id: "b-hotaru",
+        name: "宮之城ほたるB",
+        className: "B",
+        colorName: "茶色",
+        colorCode: "#795548"
+      }
+    ];
 
-    const accuracyElement =
-      document.getElementById("accuracy");
+    const teamById = new Map(
+      TEAMS.map(function (team) {
+        return [team.id, team];
+      })
+    );
 
-    const countdownElement =
-      document.getElementById("countdown");
+    const overallStatusElement =
+      document.getElementById("overallStatus");
 
-    const reloadButton =
-      document.getElementById("reloadButton");
+    const refreshButton =
+      document.getElementById("refreshButton");
 
-    const map = L.map("map").setView(
-      [31.906, 130.455],
-      14
+    const fitButton =
+      document.getElementById("fitButton");
+
+    const classAList =
+      document.getElementById("classAList");
+
+    const classBList =
+      document.getElementById("classBList");
+
+    const map = L.map("map", {
+      zoomControl: true
+    }).setView(
+      DEFAULT_MAP_CENTER,
+      DEFAULT_MAP_ZOOM
     );
 
     L.tileLayer(
-      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
       {
         maxZoom: 19,
         attribution:
-          '&copy; <a href="' +
-          'https://www.openstreetmap.org/copyright' +
-          '">OpenStreetMap</a> contributors'
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }
     ).addTo(map);
 
-    let currentMarker = null;
-    let currentCircle = null;
-    let isLoading = false;
-    let secondsUntilUpdate =
-      UPDATE_INTERVAL_MS / 1000;
+    const markers = new Map();
+    const accuracyCircles = new Map();
+    const teamCards = new Map();
 
-    function setStatus(message, type) {
-      statusElement.textContent = message;
-      statusElement.className = type || "";
+    let latestStateByTeam = new Map();
+    let isRefreshing = false;
+    let hasFittedInitially = false;
+    let lastSuccessfulRefreshAt = null;
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     function formatDateTime(value) {
@@ -345,111 +615,764 @@
       return date.toLocaleString("ja-JP");
     }
 
-    function getAgeText(recordedAt) {
-      const date = new Date(recordedAt);
-
-      if (Number.isNaN(date.getTime())) {
-        return "";
+    function formatElapsedTime(value) {
+      if (!value) {
+        return "-";
       }
 
-      const elapsedMilliseconds =
-        Date.now() - date.getTime();
+      const time = new Date(value).getTime();
 
-      if (elapsedMilliseconds < 0) {
-        return "たった今";
+      if (!Number.isFinite(time)) {
+        return "-";
       }
 
-      const elapsedSeconds =
-        Math.floor(elapsedMilliseconds / 1000);
+      const elapsed =
+        Math.max(0, Date.now() - time);
 
-      if (elapsedSeconds < 60) {
-        return elapsedSeconds + "秒前";
+      const seconds =
+        Math.floor(elapsed / 1000);
+
+      if (seconds < 60) {
+        return seconds + "秒前";
       }
 
-      const elapsedMinutes =
-        Math.floor(elapsedSeconds / 60);
+      const minutes =
+        Math.floor(seconds / 60);
 
-      if (elapsedMinutes < 60) {
-        return elapsedMinutes + "分前";
+      if (minutes < 60) {
+        return minutes + "分前";
       }
 
-      const elapsedHours =
-        Math.floor(elapsedMinutes / 60);
+      const hours =
+        Math.floor(minutes / 60);
 
-      return elapsedHours + "時間前";
+      const remainingMinutes =
+        minutes % 60;
+
+      if (hours < 24) {
+        return (
+          hours +
+          "時間" +
+          remainingMinutes +
+          "分前"
+        );
+      }
+
+      const days =
+        Math.floor(hours / 24);
+
+      return days + "日前";
     }
 
-    function isStale(recordedAt) {
-      const date = new Date(recordedAt);
+    function getManagementStatusText(status) {
+      switch (status) {
+        case "waiting":
+          return "開始前";
 
-      if (Number.isNaN(date.getTime())) {
-        return true;
+        case "active":
+          return "競技中";
+
+        case "finished":
+          return "ゴール済み";
+
+        default:
+          return "状態不明";
+      }
+    }
+
+    function getManagementStatusClass(status) {
+      switch (status) {
+        case "waiting":
+          return "status-waiting";
+
+        case "active":
+          return "status-active";
+
+        case "finished":
+          return "status-finished";
+
+        default:
+          return "status-unknown";
+      }
+    }
+
+    function getCommunicationState(recordedAt) {
+      if (!recordedAt) {
+        return {
+          text: "未送信",
+          className: "communication-none",
+          level: "none"
+        };
+      }
+
+      const recordedTime =
+        new Date(recordedAt).getTime();
+
+      if (!Number.isFinite(recordedTime)) {
+        return {
+          text: "時刻不明",
+          className: "communication-none",
+          level: "none"
+        };
+      }
+
+      const elapsed =
+        Math.max(
+          0,
+          Date.now() - recordedTime
+        );
+
+      if (elapsed <= NORMAL_LIMIT_MS) {
+        return {
+          text: "正常",
+          className: "communication-normal",
+          level: "normal"
+        };
+      }
+
+      if (elapsed <= WARNING_LIMIT_MS) {
+        return {
+          text: "注意",
+          className: "communication-warning",
+          level: "warning"
+        };
+      }
+
+      return {
+        text: "送信停止の可能性",
+        className: "communication-stale",
+        level: "stale"
+      };
+    }
+
+    function createTeamCards() {
+      TEAMS.forEach(function (team) {
+        const card =
+          document.createElement("article");
+
+        card.className = "team-card";
+        card.dataset.teamId = team.id;
+        card.style.setProperty(
+          "--team-color",
+          team.colorCode
+        );
+
+        if (
+          team.colorCode === "#FFFFFF" ||
+          team.colorCode === "#F9A825"
+        ) {
+          card.style.setProperty(
+            "--team-color-border",
+            "1px solid #444"
+          );
+        }
+
+        card.innerHTML =
+          '<div class="team-card-header">' +
+            '<div class="team-name">' +
+              escapeHtml(team.name) +
+              "（" +
+              escapeHtml(team.colorName) +
+              "）" +
+            "</div>" +
+            '<span class="status-badge status-unknown">' +
+              "確認中" +
+            "</span>" +
+          "</div>" +
+          '<div class="team-information">' +
+            "通信状態: 確認中<br>" +
+            "最終送信: -<br>" +
+            "経過時間: -<br>" +
+            "位置精度: -" +
+          "</div>" +
+          '<button class="focus-button" ' +
+            'type="button" disabled>' +
+            "地図で見る" +
+          "</button>";
+
+        const target =
+          team.className === "A"
+            ? classAList
+            : classBList;
+
+        target.appendChild(card);
+        teamCards.set(team.id, card);
+
+        const focusButton =
+          card.querySelector(".focus-button");
+
+        focusButton.addEventListener(
+          "click",
+          function () {
+            focusTeamOnMap(team.id);
+          }
+        );
+      });
+    }
+
+    function buildQueryValueList() {
+      return (
+        "(" +
+        TEAMS.map(function (team) {
+          return '"' +
+            team.id.replaceAll('"', '\\"') +
+            '"';
+        }).join(",") +
+        ")"
+      );
+    }
+
+    async function fetchJson(endpoint) {
+      const response = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          apikey: SUPABASE_KEY,
+          Authorization:
+            "Bearer " + SUPABASE_KEY,
+          Accept: "application/json",
+          "Accept-Profile": "public"
+        },
+        cache: "no-store"
+      });
+
+      if (!response.ok) {
+        const responseText =
+          await response.text();
+
+        throw new Error(
+          "HTTP " +
+          response.status +
+          ": " +
+          responseText
+        );
+      }
+
+      return await response.json();
+    }
+
+    async function fetchTeamStatuses() {
+      const endpoint =
+        SUPABASE_URL +
+        "/rest/v1/team_status" +
+        "?select=team_id%2Cstatus%2Cfinished_at" +
+        "&team_id=in." +
+        encodeURIComponent(
+          buildQueryValueList()
+        );
+
+      return await fetchJson(endpoint);
+    }
+
+    async function fetchLatestLocations() {
+      /*
+       * team_idを昇順、recorded_atを降順にし、
+       * チームごとに最初の行を最新位置として採用します。
+       */
+      const endpoint =
+        SUPABASE_URL +
+        "/rest/v1/team_locations" +
+        "?select=team_id%2Clatitude%2Clongitude" +
+        "%2Caccuracy%2Crecorded_at" +
+        "&team_id=in." +
+        encodeURIComponent(
+          buildQueryValueList()
+        ) +
+        "&order=team_id.asc%2Crecorded_at.desc" +
+        "&limit=5000";
+
+      const rows = await fetchJson(endpoint);
+      const latestByTeam = new Map();
+
+      rows.forEach(function (row) {
+        if (
+          teamById.has(row.team_id) &&
+          !latestByTeam.has(row.team_id)
+        ) {
+          latestByTeam.set(
+            row.team_id,
+            row
+          );
+        }
+      });
+
+      return latestByTeam;
+    }
+
+    function combineTeamData(
+      statusRows,
+      latestLocations
+    ) {
+      const statusByTeam = new Map();
+
+      statusRows.forEach(function (row) {
+        statusByTeam.set(
+          row.team_id,
+          row
+        );
+      });
+
+      const combined = new Map();
+
+      TEAMS.forEach(function (team) {
+        const statusRow =
+          statusByTeam.get(team.id);
+
+        const location =
+          latestLocations.get(team.id) || null;
+
+        combined.set(team.id, {
+          team: team,
+          status:
+            statusRow?.status || "unknown",
+          finishedAt:
+            statusRow?.finished_at || null,
+          location: location
+        });
+      });
+
+      return combined;
+    }
+
+    function createMarkerIcon(state) {
+      const team = state.team;
+      const communication =
+        getCommunicationState(
+          state.location?.recorded_at
+        );
+
+      const wrapperClasses = [
+        "marker-wrapper"
+      ];
+
+      if (state.status === "finished") {
+        wrapperClasses.push(
+          "marker-finished"
+        );
+      }
+
+      if (communication.level === "stale") {
+        wrapperClasses.push(
+          "marker-stale"
+        );
+      }
+
+      let borderColor = "#222";
+
+      if (
+        team.colorCode === "#FFFFFF" ||
+        team.colorCode === "#F9A825"
+      ) {
+        borderColor = "#111";
+      }
+
+      const html =
+        '<div class="' +
+          wrapperClasses.join(" ") +
+        '">' +
+          '<span class="marker-dot" style="' +
+            "background:" +
+            escapeHtml(team.colorCode) +
+            ";" +
+            "border-color:" +
+            borderColor +
+            ";" +
+          '"></span>' +
+          '<span class="marker-label">' +
+            escapeHtml(team.name) +
+          "</span>" +
+        "</div>";
+
+      return L.divIcon({
+        className: "map-team-icon",
+        html: html,
+        iconSize: [230, 32],
+        iconAnchor: [13, 16],
+        popupAnchor: [0, -17]
+      });
+    }
+
+    function createPopupHtml(state) {
+      const team = state.team;
+      const location = state.location;
+
+      const communication =
+        getCommunicationState(
+          location?.recorded_at
+        );
+
+      const accuracyText =
+        Number.isFinite(
+          Number(location?.accuracy)
+        )
+          ? "約" +
+            Math.round(
+              Number(location.accuracy)
+            ) +
+            "m"
+          : "-";
+
+      let finishedText = "";
+
+      if (state.status === "finished") {
+        finishedText =
+          "<br>ゴール日時: " +
+          escapeHtml(
+            formatDateTime(
+              state.finishedAt
+            )
+          );
       }
 
       return (
-        Date.now() - date.getTime() >
-        STALE_TIME_MS
+        "<strong>" +
+          escapeHtml(team.name) +
+        "</strong><br>" +
+        escapeHtml(team.className) +
+        "クラス・" +
+        escapeHtml(team.colorName) +
+        "<br>管理状態: " +
+        escapeHtml(
+          getManagementStatusText(
+            state.status
+          )
+        ) +
+        finishedText +
+        "<br>通信状態: " +
+        escapeHtml(communication.text) +
+        "<br>最終送信: " +
+        escapeHtml(
+          formatDateTime(
+            location?.recorded_at
+          )
+        ) +
+        "<br>経過時間: " +
+        escapeHtml(
+          formatElapsedTime(
+            location?.recorded_at
+          )
+        ) +
+        "<br>位置精度: " +
+        escapeHtml(accuracyText)
       );
     }
 
-    function escapeHtml(value) {
-      return String(value ?? "")
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
+    function updateMapMarker(state) {
+      const team = state.team;
+      const location = state.location;
 
-    function updateMarker(
-      point,
-      accuracy,
-      popupHtml
-    ) {
-      if (currentMarker === null) {
-        currentMarker = L.marker(point)
-          .addTo(map);
-      } else {
-        currentMarker.setLatLng(point);
-      }
+      if (!location) {
+        const oldMarker =
+          markers.get(team.id);
 
-      currentMarker
-        .bindPopup(popupHtml)
-        .openPopup();
-
-      if (
-        Number.isFinite(accuracy) &&
-        accuracy >= 0
-      ) {
-        if (currentCircle === null) {
-          currentCircle = L.circle(point, {
-            radius: accuracy,
-            color: "#d93636",
-            fillColor: "#d93636",
-            fillOpacity: 0.15
-          }).addTo(map);
-        } else {
-          currentCircle.setLatLng(point);
-          currentCircle.setRadius(accuracy);
+        if (oldMarker) {
+          map.removeLayer(oldMarker);
+          markers.delete(team.id);
         }
-      } else if (currentCircle !== null) {
-        map.removeLayer(currentCircle);
-        currentCircle = null;
-      }
-    }
 
-    async function loadRemoteLocation() {
-      if (isLoading) {
+        const oldCircle =
+          accuracyCircles.get(team.id);
+
+        if (oldCircle) {
+          map.removeLayer(oldCircle);
+          accuracyCircles.delete(team.id);
+        }
+
         return;
       }
 
-      isLoading = true;
-      reloadButton.disabled = true;
+      const latitude =
+        Number(location.latitude);
 
-      setStatus(
-        "最新位置を読み込んでいます...",
-        "loading"
+      const longitude =
+        Number(location.longitude);
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+      ) {
+        return;
+      }
+
+      const position = [
+        latitude,
+        longitude
+      ];
+
+      let marker =
+        markers.get(team.id);
+
+      if (!marker) {
+        marker = L.marker(position, {
+          icon: createMarkerIcon(state),
+          zIndexOffset:
+            state.status === "finished"
+              ? 500
+              : 0
+        }).addTo(map);
+
+        markers.set(team.id, marker);
+      } else {
+        marker.setLatLng(position);
+        marker.setIcon(
+          createMarkerIcon(state)
+        );
+        marker.setZIndexOffset(
+          state.status === "finished"
+            ? 500
+            : 0
+        );
+      }
+
+      marker.bindPopup(
+        createPopupHtml(state)
       );
+
+      const accuracy =
+        Number(location.accuracy);
+
+      let circle =
+        accuracyCircles.get(team.id);
+
+      if (
+        Number.isFinite(accuracy) &&
+        accuracy > 0
+      ) {
+        if (!circle) {
+          circle = L.circle(position, {
+            radius: accuracy,
+            color: team.colorCode,
+            weight: 1,
+            opacity: 0.55,
+            fillColor: team.colorCode,
+            fillOpacity: 0.08
+          }).addTo(map);
+
+          accuracyCircles.set(
+            team.id,
+            circle
+          );
+        } else {
+          circle.setLatLng(position);
+          circle.setRadius(accuracy);
+          circle.setStyle({
+            color: team.colorCode,
+            fillColor: team.colorCode
+          });
+        }
+      } else if (circle) {
+        map.removeLayer(circle);
+        accuracyCircles.delete(team.id);
+      }
+    }
+
+    function updateTeamCard(state) {
+      const card =
+        teamCards.get(state.team.id);
+
+      if (!card) {
+        return;
+      }
+
+      const statusBadge =
+        card.querySelector(
+          ".status-badge"
+        );
+
+      const information =
+        card.querySelector(
+          ".team-information"
+        );
+
+      const focusButton =
+        card.querySelector(
+          ".focus-button"
+        );
+
+      statusBadge.className =
+        "status-badge " +
+        getManagementStatusClass(
+          state.status
+        );
+
+      statusBadge.textContent =
+        getManagementStatusText(
+          state.status
+        );
+
+      const location = state.location;
+
+      const communication =
+        getCommunicationState(
+          location?.recorded_at
+        );
+
+      const accuracyText =
+        Number.isFinite(
+          Number(location?.accuracy)
+        )
+          ? "約" +
+            Math.round(
+              Number(location.accuracy)
+            ) +
+            "m"
+          : "-";
+
+      let finishedHtml = "";
+
+      if (state.status === "finished") {
+        finishedHtml =
+          "<br>ゴール日時: " +
+          escapeHtml(
+            formatDateTime(
+              state.finishedAt
+            )
+          );
+      }
+
+      information.innerHTML =
+        '通信状態: <span class="' +
+          communication.className +
+        '">' +
+          escapeHtml(
+            communication.text
+          ) +
+        "</span>" +
+        "<br>最終送信: " +
+        escapeHtml(
+          formatDateTime(
+            location?.recorded_at
+          )
+        ) +
+        "<br>経過時間: " +
+        escapeHtml(
+          formatElapsedTime(
+            location?.recorded_at
+          )
+        ) +
+        "<br>位置精度: " +
+        escapeHtml(accuracyText) +
+        finishedHtml;
+
+      focusButton.disabled = !location;
+    }
+
+    function renderAllTeams(combinedState) {
+      combinedState.forEach(function (state) {
+        updateTeamCard(state);
+        updateMapMarker(state);
+      });
+    }
+
+    function getAvailablePositions() {
+      const positions = [];
+
+      latestStateByTeam.forEach(
+        function (state) {
+          const location = state.location;
+
+          if (!location) {
+            return;
+          }
+
+          const latitude =
+            Number(location.latitude);
+
+          const longitude =
+            Number(location.longitude);
+
+          if (
+            Number.isFinite(latitude) &&
+            Number.isFinite(longitude)
+          ) {
+            positions.push([
+              latitude,
+              longitude
+            ]);
+          }
+        }
+      );
+
+      return positions;
+    }
+
+    function fitAllTeams() {
+      const positions =
+        getAvailablePositions();
+
+      if (positions.length === 0) {
+        map.setView(
+          DEFAULT_MAP_CENTER,
+          DEFAULT_MAP_ZOOM
+        );
+
+        return;
+      }
+
+      if (positions.length === 1) {
+        map.setView(positions[0], 15);
+        return;
+      }
+
+      const bounds =
+        L.latLngBounds(positions);
+
+      map.fitBounds(bounds, {
+        padding: [45, 45],
+        maxZoom: 16
+      });
+    }
+
+    function focusTeamOnMap(teamId) {
+      const state =
+        latestStateByTeam.get(teamId);
+
+      if (!state?.location) {
+        return;
+      }
+
+      const latitude =
+        Number(state.location.latitude);
+
+      const longitude =
+        Number(state.location.longitude);
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
+      ) {
+        return;
+      }
+
+      map.setView(
+        [latitude, longitude],
+        Math.max(map.getZoom(), 16)
+      );
+
+      const marker =
+        markers.get(teamId);
+
+      if (marker) {
+        marker.openPopup();
+      }
+
+      document
+        .getElementById("map")
+        .scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+    }
+
+    async function refreshAllData() {
+      if (isRefreshing) {
+        return;
+      }
+
+      isRefreshing = true;
+      refreshButton.disabled = true;
+
+      overallStatusElement.textContent =
+        "最新データを取得しています...";
 
       try {
         if (
@@ -458,216 +1381,96 @@
           )
         ) {
           throw new Error(
-            "Publishable keyを入力してください。"
+            "Publishable keyが設定されていません。"
           );
         }
 
-        const tablePath =
-          "/rest/v1/team_locations";
+        const results =
+          await Promise.all([
+            fetchTeamStatuses(),
+            fetchLatestLocations()
+          ]);
 
-        const query =
-          "?select=" +
-          "team_id%2Clatitude%2Clongitude%2Caccuracy%2Crecorded_at" +
-          "&team_id=eq." +
-          encodeURIComponent(TEAM_ID) +
-          "&order=recorded_at.desc" +
-          "&limit=1";
+        const statusRows = results[0];
+        const latestLocations = results[1];
 
-        const endpoint =
-          SUPABASE_URL + tablePath + query;
-
-        const response = await fetch(endpoint, {
-          method: "GET",
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization:
-              "Bearer " + SUPABASE_KEY,
-            Accept: "application/json",
-            "Accept-Profile": "public"
-          },
-          cache: "no-store"
-        });
-
-        if (!response.ok) {
-          const text = await response.text();
-
-          throw new Error(
-            "HTTP " +
-            response.status +
-            ": " +
-            text
-          );
-        }
-
-        const rows = await response.json();
-
-        if (
-          !Array.isArray(rows) ||
-          rows.length === 0
-        ) {
-          recordedAtElement.textContent = "-";
-          accuracyElement.textContent = "-";
-
-          setStatus(
-            "接続には成功しましたが、鶴田Aの位置情報がまだありません。",
-            "warning"
+        latestStateByTeam =
+          combineTeamData(
+            statusRows,
+            latestLocations
           );
 
-          return;
-        }
-
-        const row = rows[0];
-
-        const latitude =
-          Number(row.latitude);
-
-        const longitude =
-          Number(row.longitude);
-
-        const accuracy =
-          Number(row.accuracy);
-
-        if (
-          !Number.isFinite(latitude) ||
-          !Number.isFinite(longitude)
-        ) {
-          throw new Error(
-            "保存された緯度または経度が正しくありません。"
-          );
-        }
-
-        const point = [
-          latitude,
-          longitude
-        ];
-
-        const accuracyText =
-          Number.isFinite(accuracy)
-            ? "約" +
-              Math.round(accuracy) +
-              "m"
-            : "不明";
-
-        const recordedAtText =
-          formatDateTime(row.recorded_at);
-
-        const ageText =
-          getAgeText(row.recorded_at);
-
-        recordedAtElement.textContent =
-          recordedAtText +
-          (ageText ? "（" + ageText + "）" : "");
-
-        accuracyElement.textContent =
-          accuracyText;
-
-        const popupHtml =
-          "<strong>チーム: " +
-          escapeHtml(row.team_id) +
-          "</strong>" +
-          "<br>精度: " +
-          escapeHtml(accuracyText) +
-          "<br>更新: " +
-          escapeHtml(recordedAtText) +
-          (ageText
-            ? "<br>経過: " +
-              escapeHtml(ageText)
-            : "");
-
-        updateMarker(
-          point,
-          accuracy,
-          popupHtml
+        renderAllTeams(
+          latestStateByTeam
         );
 
-        /*
-         * 最初の取得時だけ地図を現在位置へ移動します。
-         * 2回目以降は、利用者が動かした地図の縮尺を維持します。
-         */
-        if (!map.hasLayer(currentMarker)) {
-          map.setView(point, 17);
-        }
+        lastSuccessfulRefreshAt =
+          new Date();
 
-        if (
-          currentMarker &&
-          currentMarker._firstDisplayDone !== true
-        ) {
-          map.setView(point, 17);
-          currentMarker._firstDisplayDone = true;
-        }
+        const locationCount =
+          Array.from(
+            latestStateByTeam.values()
+          ).filter(function (state) {
+            return Boolean(state.location);
+          }).length;
 
-        if (isStale(row.recorded_at)) {
-          setStatus(
-            "鶴田Aの位置を取得しましたが、最終送信から2分以上経過しています。",
-            "warning"
-          );
-        } else {
-          setStatus(
-            "鶴田Aの最新位置を取得しました。",
-            "success"
-          );
-        }
+        overallStatusElement.innerHTML =
+          "<strong>更新完了:</strong> " +
+          escapeHtml(
+            lastSuccessfulRefreshAt
+              .toLocaleString("ja-JP")
+          ) +
+          "<br>" +
+          "位置確認済み: " +
+          locationCount +
+          " / " +
+          TEAMS.length +
+          "チーム・30秒ごとに自動更新";
 
-        window.setTimeout(function () {
-          map.invalidateSize();
-        }, 100);
+        if (!hasFittedInitially) {
+          fitAllTeams();
+          hasFittedInitially = true;
+        }
       } catch (error) {
         console.error(error);
 
-        setStatus(
-          "位置を取得できませんでした: " +
-          error.message,
-          "error"
-        );
+        overallStatusElement.innerHTML =
+          '<span class="error-message">' +
+            "データを取得できませんでした: " +
+            escapeHtml(error.message) +
+          "</span>" +
+          (
+            lastSuccessfulRefreshAt
+              ? "<br>最後の正常更新: " +
+                escapeHtml(
+                  lastSuccessfulRefreshAt
+                    .toLocaleString("ja-JP")
+                )
+              : ""
+          );
       } finally {
-        isLoading = false;
-        reloadButton.disabled = false;
-
-        secondsUntilUpdate =
-          UPDATE_INTERVAL_MS / 1000;
+        isRefreshing = false;
+        refreshButton.disabled = false;
       }
     }
 
-    function updateCountdown() {
-      countdownElement.textContent =
-        secondsUntilUpdate + "秒";
+    createTeamCards();
 
-      secondsUntilUpdate -= 1;
-
-      if (secondsUntilUpdate < 0) {
-        secondsUntilUpdate =
-          UPDATE_INTERVAL_MS / 1000;
-      }
-    }
-
-    reloadButton.addEventListener(
+    refreshButton.addEventListener(
       "click",
-      function () {
-        secondsUntilUpdate =
-          UPDATE_INTERVAL_MS / 1000;
-
-        loadRemoteLocation();
-      }
+      refreshAllData
     );
 
-    window.addEventListener(
-      "resize",
-      function () {
-        map.invalidateSize();
-      }
+    fitButton.addEventListener(
+      "click",
+      fitAllTeams
     );
 
-    loadRemoteLocation();
-    updateCountdown();
+    refreshAllData();
 
     window.setInterval(
-      loadRemoteLocation,
-      UPDATE_INTERVAL_MS
-    );
-
-    window.setInterval(
-      updateCountdown,
-      1000
+      refreshAllData,
+      REFRESH_INTERVAL_MS
     );
   </script>
 </body>
