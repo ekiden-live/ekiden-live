@@ -319,21 +319,22 @@
     }
 
     .marker-label {
-      max-width: 190px;
-      margin-left: 5px;
-      padding: 3px 7px;
-      color: #111;
-      font-size: 12px;
-      font-weight: bold;
-      line-height: 1.35;
-      white-space: normal;
-      overflow-wrap: anywhere;
-      background: rgba(255, 255, 255, 0.94);
-      border: 1px solid #333;
-      border-radius: 5px;
-      box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.25);
-    }
+  width: max-content;
+  max-width: 130px;
+  margin-left: 5px;
+  padding: 3px 7px;
+  color: #111;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #333;
+  border-radius: 5px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.25);
+}
 
     .marker-finished .marker-dot {
       border-style: double;
@@ -1015,7 +1016,7 @@
       return L.divIcon({
         className: "map-team-icon",
         html: html,
-        iconSize: [230, 32],
+        iconSize: [165, 52],
         iconAnchor: [13, 16],
         popupAnchor: [0, -17]
       });
