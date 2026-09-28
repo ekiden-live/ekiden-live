@@ -129,14 +129,17 @@
     }
 
     #map {
-      width: 100%;
-      height: min(65vh, 720px);
-      min-height: 420px;
-      background: #dfe8ee;
-      border: 1px solid #bfcbd4;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-    }
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: min(65vh, 720px);
+  min-height: 420px;
+  overflow: hidden;
+  background: #dfe8ee;
+  border: 1px solid #bfcbd4;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
 
     .legend {
       display: flex;
@@ -351,7 +354,7 @@
       text-align: center;
     }
 
-    @media (max-width: 600px) {
+        @media (max-width: 600px) {
       main {
         padding: 10px;
       }
@@ -377,7 +380,29 @@
         padding: 12px;
       }
     }
+
+    /* 地図の横幅・はみ出し防止 */
+    main,
+    .control-panel,
+    .legend,
+    .class-section,
+    #map {
+      min-width: 0;
+    }
+
+    .leaflet-container {
+      max-width: 100%;
+    }
+
+    .leaflet-control-container {
+      font-size: 14px;
+    }
+
+    body {
+      overflow-x: hidden;
+    }
   </style>
+
 </head>
 
 <body>
@@ -582,6 +607,10 @@
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }
     ).addTo(map);
+    window.setTimeout(function () {
+  map.invalidateSize();
+}, 200);
+
 
     const markers = new Map();
     const accuracyCircles = new Map();
@@ -1428,9 +1457,14 @@
           "チーム・30秒ごとに自動更新";
 
         if (!hasFittedInitially) {
-          fitAllTeams();
-          hasFittedInitially = true;
-        }
+  window.setTimeout(function () {
+    map.invalidateSize();
+    fitAllTeams();
+    hasFittedInitially = true;
+  }, 300);
+} else {
+  map.invalidateSize();
+}
       } catch (error) {
         console.error(error);
 
@@ -1462,9 +1496,16 @@
     );
 
     fitButton.addEventListener(
-      "click",
-      fitAllTeams
+  "click",
+  function () {
+    map.invalidateSize();
+
+    window.setTimeout(
+      fitAllTeams,
+      100
     );
+  }
+);
 
     refreshAllData();
 
@@ -1472,6 +1513,36 @@
       refreshAllData,
       REFRESH_INTERVAL_MS
     );
+    let resizeTimer = null;
+
+window.addEventListener(
+  "resize",
+  function () {
+    if (resizeTimer !== null) {
+      window.clearTimeout(resizeTimer);
+    }
+
+    resizeTimer = window.setTimeout(
+      function () {
+        map.invalidateSize();
+      },
+      200
+    );
+  }
+);
+
+window.addEventListener(
+  "orientationchange",
+  function () {
+    window.setTimeout(
+      function () {
+        map.invalidateSize();
+        fitAllTeams();
+      },
+      400
+    );
+  }
+);
   </script>
 </body>
 </html>
