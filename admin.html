@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>駅伝競走大会 管理画面</title>
+
+  <style>
+    :root {
+      --primary: #154f7d;
+      --primary-dark: #0d3555;
+      --danger: #b42318;
+      --success: #18743a;
+      --warning: #8a5a00;
+      --page: #eef2f5;
+      --border: #d6dde3;
+      --text: #1d2730;
+      --muted: #66737f;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      color: var(--text);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Hiragino Kaku Gothic ProN",
+        "Yu Gothic",
+        Meiryo,
+        sans-serif;
+      background: var(--page);
+    }
+
+    body {
+      overflow-x: hidden;
+    }
+
+    .page-header {
+      padding: 22px 16px;
+      color: #fff;
+      text-align: center;
+      background:
+        linear-gradient(
+          135deg,
+          var(--primary-dark),
+          var(--primary)
+        );
+      border-bottom: 5px solid #f2c94c;
+    }
+
+    .page-header h1 {
+      margin: 0;
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
+    }
+
+    .page-header p {
+      margin: 7px 0 0;
+      opacity: 0.95;
+    }
+
+    main {
+      width: min(1100px, 100%);
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    .panel {
+      margin-bottom: 14px;
+      padding: 16px;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .panel h2 {
+      margin: 0 0 14px;
+      font-size: 1.25rem;
+    }
+
+    .login-panel {
+      width: min(480px, 100%);
+      margin: 28px auto;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 1rem;
+      border: 1px solid #aeb9c2;
+      border-radius: 7px;
+    }
+
+    input:focus {
+      outline: 3px solid rgba(21, 79, 125, 0.2);
+      border-color: var(--primary);
+    }
+
+    button {
+      min-height: 44px;
+      padding: 9px 14px;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: bold;
+      border: 0;
+      border-radius: 7px;
+      background: var(--primary);
+      cursor: pointer;
+    }
+
+    button:hover {
+      filter: brightness(0.95);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .button-danger {
+      background: var(--danger);
+    }
+
+    .button-success {
+      background: var(--success);
+    }
+
+    .button-secondary {
+      color: var(--text);
+      background: #e8edf1;
+      border: 1px solid #c4ced6;
+    }
+
+    .button-warning {
+      color: #fff;
+      background: var(--warning);
+    }
+
+    .full-button {
+      width: 100%;
+    }
+
+    .status-message {
+      min-height: 1.6em;
+      margin-top: 12px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .message-error {
+      color: var(--danger);
+      font-weight: bold;
+    }
+
+    .message-success {
+      color: var(--success);
+      font-weight: bold;
+    }
+
+    .management-header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .user-information {
+      min-width: 0;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .header-buttons,
+    .bulk-buttons,
+    .team-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .bulk-buttons button {
+      flex: 1 1 210px;
+    }
+
+    .notice {
+      margin-top: 12px;
+      padding: 10px 12px;
+      color: #664d03;
+      line-height: 1.6;
+      background: #fff3cd;
+      border: 1px solid #ffecb5;
+      border-radius: 7px;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .team-card {
+      min-width: 0;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-left:
+        7px solid
+        var(--team-color, #777);
+      border-radius: 9px;
+      background: #fff;
+    }
+
+    .team-card h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+      overflow-wrap: anywhere;
+    }
+
+    .current-status {
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    .status-waiting {
+      color: #624a00;
+    }
+
+    .status-active {
+      color: #075f23;
+    }
+
+    .status-finished {
+      color: #713800;
+    }
+
+    .status-unknown {
+      color: #555;
+    }
+
+    .team-actions button {
+      flex: 1 1 110px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    footer {
+      padding: 20px 16px 28px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      main {
+        padding: 10px;
+      }
+
+      .panel {
+        padding: 12px;
+      }
+
+      .team-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header-buttons {
+        width: 100%;
+      }
+
+      .header-buttons button {
+        flex: 1 1 130px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="page-header">
+    <h1>第22回さつま町駅伝競走大会</h1>
+    <p>大会管理画面</p>
+  </header>
+
+  <main>
+    <section
+      id="loginSection"
+      class="panel login-panel"
+    >
+      <h2>管理者ログイン</h2>
+
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginId">
+            ログインID
+          </label>
+
+          <input
+            id="loginId"
+            type="text"
+            value="administrator"
+            autocomplete="username"
+            readonly
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="password">
+            共通パスワード
+          </label>
+
+          <input
+            id="password"
+            type="password"
+            autocomplete="current-password"
+            required
+          >
+        </div>
+
+        <button
+          id="loginButton"
+          class="full-button"
+          type="submit"
+        >
+          ログイン
+        </button>
+      </form>
+
+      <div
+        id="loginMessage"
+        class="status-message"
+        aria-live="polite"
+      ></div>
+    </section>
+
+    <section
+      id="managementSection"
+      class="hidden"
+    >
+      <div class="panel">
+        <div class="management-header">
+          <div class="user-information">
+            <strong id="displayName">
+              管理者
+            </strong>
+            <br>
+            ログインID:
+            <span id="displayLoginId">
+              -
+            </span>
+          </div>
+
+          <div class="header-buttons">
+            <button
+              id="reloadButton"
+              type="button"
+              class="button-secondary"
+            >
+              最新状態を再読込
+            </button>
+
+            <button
+              id="logoutButton"
+              type="button"
+              class="button-danger"
+            >
+              ログアウト
+            </button>
+          </div>
+        </div>
+
+        <div
+          id="managementMessage"
+          class="status-message"
+          aria-live="polite"
+        ></div>
+      </div>
+
+      <div class="panel">
+        <h2>一括操作</h2>
+
+        <div class="bulk-buttons">
+          <button
+            id="allActiveButton"
+            type="button"
+            class="button-success"
+          >
+            全チームを競技中にする
+          </button>
+
+          <button
+            id="allWaitingButton"
+            type="button"
+            class="button-warning"
+          >
+            全チームを開始前に戻す
+          </button>
+        </div>
+
+        <div class="notice">
+          一括操作は全8チームへ反映されます。
+          操作前に確認画面が表示されます。
+          全チーム一括ゴール機能はありません。
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>チーム別操作</h2>
+
+        <div
+          id="teamList"
+          class="team-grid"
+        ></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    管理操作終了後は、必ずログアウトしてください。
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <script>
+    const SUPABASE_URL =
+      "https://tmxmmikcgzdcyyotkiex.supabase.co";
+
+    const SUPABASE_KEY =
+      "sb_publishable_dSckTd34uKOP-zWHbfMsTg_pr74IBgb";
+
+    const LOGIN_ID =
+      "administrator";
+
+    const AUTH_EMAIL =
+      "ekiden-administrator@auth.invalid";
+
+    const TEAMS = [
+      {
+        id: "a-yachi-funaki",
+        name: "宮之城屋地船木",
+        className: "A",
+        colorCode: "#7B1FA2"
+      },
+      {
+        id: "a-tsuruda",
+        name: "鶴田A",
+        className: "A",
+        colorCode: "#1565C0"
+      },
+      {
+        id: "a-hotaru",
+        name: "宮之城ほたるA",
+        className: "A",
+        colorCode: "#FFFFFF"
+      },
+      {
+        id: "a-hokubu",
+        name: "宮之城北部",
+        className: "A",
+        colorCode: "#D32F2F"
+      },
+      {
+        id: "b-yamasaki",
+        name: "宮之城山崎",
+        className: "B",
+        colorCode: "#EC407A"
+      },
+      {
+        id: "b-satsuma",
+        name: "薩摩",
+        className: "B",
+        colorCode: "#F9A825"
+      },
+      {
+        id: "b-tsuruda",
+        name: "鶴田B",
+        className: "B",
+        colorCode: "#2E7D32"
+      },
+      {
+        id: "b-hotaru",
+        name: "宮之城ほたるB",
+        className: "B",
+        colorCode: "#795548"
+      }
+    ];
+
+    const {
+      createClient
+    } = window.supabase;
+
+    const supabaseClient =
+      createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY,
+        {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: false
+          }
+        }
+      );
+
+    const loginSection =
+      document.getElementById(
+        "loginSection"
+      );
+
+    const managementSection =
+      document.getElementById(
+        "managementSection"
+      );
+
+    const loginForm =
+      document.getElementById(
+        "loginForm"
+      );
+
+    const passwordInput =
+      document.getElementById(
+        "password"
+      );
+
+    const loginButton =
+      document.getElementById(
+        "loginButton"
+      );
+
+    const loginMessage =
+      document.getElementById(
+        "loginMessage"
+      );
+
+    const managementMessage =
+      document.getElementById(
+        "managementMessage"
+      );
+
+    const displayNameElement =
+      document.getElementById(
+        "displayName"
+      );
+
+    const displayLoginIdElement =
+      document.getElementById(
+        "displayLoginId"
+      );
+
+    const reloadButton =
+      document.getElementById(
+        "reloadButton"
+      );
+
+    const logoutButton =
+      document.getElementById(
+        "logoutButton"
+      );
+
+    const allActiveButton =
+      document.getElementById(
+        "allActiveButton"
+      );
+
+    const allWaitingButton =
+      document.getElementById(
+        "allWaitingButton"
+      );
+
+    const teamList =
+      document.getElementById(
+        "teamList"
+      );
+
+    let currentProfile = null;
+    let currentStatuses = new Map();
+    let isOperating = false;
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function getStatusText(status) {
+      switch (status) {
+        case "waiting":
+          return "開始前";
+
+        case "active":
+          return "競技中";
+
+        case "finished":
+          return "ゴール済み";
+
+        default:
+          return "状態不明";
+      }
+    }
+
+    function getStatusClass(status) {
+      switch (status) {
+        case "waiting":
+          return "status-waiting";
+
+        case "active":
+          return "status-active";
+
+        case "finished":
+          return "status-finished";
+
+        default:
+          return "status-unknown";
+      }
+    }
+
+    function setLoginMessage(
+      text,
+      type
+    ) {
+      loginMessage.textContent = text;
+      loginMessage.className =
+        "status-message";
+
+      if (type === "error") {
+        loginMessage.classList.add(
+          "message-error"
+        );
+      }
+
+      if (type === "success") {
+        loginMessage.classList.add(
+          "message-success"
+        );
+      }
+    }
+
+    function setManagementMessage(
+      text,
+      type
+    ) {
+      managementMessage.textContent =
+        text;
+
+      managementMessage.className =
+        "status-message";
+
+      if (type === "error") {
+        managementMessage.classList.add(
+          "message-error"
+        );
+      }
+
+      if (type === "success") {
+        managementMessage.classList.add(
+          "message-success"
+        );
+      }
+    }
+
+    function setOperating(value) {
+      isOperating = value;
+
+      document
+        .querySelectorAll("button")
+        .forEach(function (button) {
+          button.disabled = value;
+        });
+
+      if (!value) {
+        loginButton.disabled = false;
+      }
+    }
+
+    function showLogin() {
+      loginSection.classList.remove(
+        "hidden"
+      );
+
+      managementSection.classList.add(
+        "hidden"
+      );
+
+      currentProfile = null;
+      currentStatuses = new Map();
+      passwordInput.value = "";
+    }
+
+    function showManagement() {
+      loginSection.classList.add(
+        "hidden"
+      );
+
+      managementSection.classList.remove(
+        "hidden"
+      );
+
+      displayNameElement.textContent =
+        currentProfile.display_name;
+
+      displayLoginIdElement.textContent =
+        currentProfile.login_id;
+    }
+
+    async function getCurrentSessionUser() {
+      const {
+        data,
+        error
+      } =
+        await supabaseClient.auth
+          .getSession();
+
+      if (error) {
+        throw error;
+      }
+
+      return data.session?.user || null;
+    }
+
+    async function loadAdminProfile(
+      userId
+    ) {
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .from("admin_profiles")
+          .select(
+            "user_id,login_id,display_name,is_active"
+          )
+          .eq("user_id", userId)
+          .eq("login_id", LOGIN_ID)
+          .eq("is_active", true)
+          .maybeSingle();
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data) {
+        throw new Error(
+          "このアカウントには管理権限がありません。"
+        );
+      }
+
+      return data;
+    }
+
+    async function loadTeamStatuses() {
+      const {
+        data,
+        error
+      } =
+        await supabaseClient
+          .from("team_status")
+          .select(
+            "team_id,status,finished_at,updated_at"
+          )
+          .in(
+            "team_id",
+            TEAMS.map(function (team) {
+              return team.id;
+            })
+          );
+
+      if (error) {
+        throw error;
+      }
+
+      currentStatuses = new Map();
+
+      data.forEach(function (row) {
+        currentStatuses.set(
+          row.team_id,
+          row
+        );
+      });
+
+      renderTeamCards();
+    }
+
+    function renderTeamCards() {
+      teamList.innerHTML = "";
+
+      TEAMS.forEach(function (team) {
+        const row =
+          currentStatuses.get(team.id);
+
+        const status =
+          row?.status || "unknown";
+
+        const card =
+          document.createElement(
+            "article"
+          );
+
+        card.className = "team-card";
+
+        card.style.setProperty(
+          "--team-color",
+          team.colorCode
+        );
+
+        card.innerHTML =
+          "<h3>" +
+            escapeHtml(team.name) +
+            "（" +
+            escapeHtml(team.className) +
+            "クラス）" +
+          "</h3>" +
+          '<div class="current-status ' +
+            getStatusClass(status) +
+          '">' +
+            "現在: " +
+            escapeHtml(
+              getStatusText(status)
+            ) +
+          "</div>" +
+          '<div class="team-actions">' +
+            '<button type="button" ' +
+              'class="button-warning" ' +
+              'data-team-id="' +
+                escapeHtml(team.id) +
+              '" data-status="waiting">' +
+              "開始前" +
+            "</button>" +
+            '<button type="button" ' +
+              'class="button-success" ' +
+              'data-team-id="' +
+                escapeHtml(team.id) +
+              '" data-status="active">' +
+              "競技開始" +
+            "</button>" +
+            '<button type="button" ' +
+              'class="button-danger" ' +
+              'data-team-id="' +
+                escapeHtml(team.id) +
+              '" data-status="finished">' +
+              "ゴール" +
+            "</button>" +
+          "</div>";
+
+        teamList.appendChild(card);
+      });
+    }
+
+    async function insertActionLog(
+      teamId,
+      previousStatus,
+      newStatus,
+      actionType
+    ) {
+      const user =
+        await getCurrentSessionUser();
+
+      if (!user) {
+        throw new Error(
+          "ログイン状態を確認できません。"
+        );
+      }
+
+      const {
+        error
+      } =
+        await supabaseClient
+          .from("admin_action_logs")
+          .insert({
+            user_id: user.id,
+            login_id:
+              currentProfile.login_id,
+            display_name:
+              currentProfile.display_name,
+            action_type: actionType,
+            team_id: teamId,
+            previous_status:
+              previousStatus,
+            new_status: newStatus
+          });
+
+      if (error) {
+        throw error;
+      }
+    }
+
+    async function updateSingleTeam(
+      teamId,
+      newStatus
+    ) {
+      const team =
+        TEAMS.find(function (item) {
+          return item.id === teamId;
+        });
+
+      if (!team) {
+        return;
+      }
+
+      const previousStatus =
+        currentStatuses.get(teamId)
+          ?.status || "unknown";
+
+      if (previousStatus === newStatus) {
+        setManagementMessage(
+          team.name +
+            "は既に「" +
+            getStatusText(newStatus) +
+            "」です。",
+          ""
+        );
+
+        return;
+      }
+
+      const confirmed =
+        window.confirm(
+          team.name +
+            "を「" +
+            getStatusText(newStatus) +
+            "」に変更しますか？"
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      setOperating(true);
+
+      setManagementMessage(
+        "状態を変更しています...",
+        ""
+      );
+
+      try {
+        const updateValues = {
+          status: newStatus,
+          updated_at:
+            new Date().toISOString()
+        };
+
+        if (newStatus === "finished") {
+          updateValues.finished_at =
+            new Date().toISOString();
+        } else {
+          updateValues.finished_at = null;
+        }
+
+        const {
+          error
+        } =
+          await supabaseClient
+            .from("team_status")
+            .update(updateValues)
+            .eq("team_id", teamId);
+
+        if (error) {
+          throw error;
+        }
+
+        await insertActionLog(
+          teamId,
+          previousStatus,
+          newStatus,
+          "single_status_update"
+        );
+
+        await loadTeamStatuses();
+
+        setManagementMessage(
+          team.name +
+            "を「" +
+            getStatusText(newStatus) +
+            "」に変更しました。",
+          "success"
+        );
+      } catch (error) {
+        console.error(error);
+
+        setManagementMessage(
+          "変更できませんでした: " +
+            error.message,
+          "error"
+        );
+      } finally {
+        setOperating(false);
+      }
+    }
+
+    async function updateAllTeams(
+      newStatus
+    ) {
+      const statusText =
+        getStatusText(newStatus);
+
+      const confirmed =
+        window.confirm(
+          "全8チームを「" +
+            statusText +
+            "」に変更しますか？"
+        );
+
+      if (!confirmed) {
+        return;
+      }
+
+      const secondConfirmed =
+        window.confirm(
+          "全チームへの一括操作です。" +
+          "本当に実行しますか？"
+        );
+
+      if (!secondConfirmed) {
+        return;
+      }
+
+      setOperating(true);
+
+      setManagementMessage(
+        "全チームの状態を変更しています...",
+        ""
+      );
+
+      try {
+        const previousStatuses =
+          new Map(currentStatuses);
+
+        const updateValues = {
+          status: newStatus,
+          finished_at: null,
+          updated_at:
+            new Date().toISOString()
+        };
+
+        const {
+          error
+        } =
+          await supabaseClient
+            .from("team_status")
+            .update(updateValues)
+            .in(
+              "team_id",
+              TEAMS.map(function (team) {
+                return team.id;
+              })
+            );
+
+        if (error) {
+          throw error;
+        }
+
+        for (const team of TEAMS) {
+          await insertActionLog(
+            team.id,
+            previousStatuses.get(team.id)
+              ?.status || "unknown",
+            newStatus,
+            "bulk_status_update"
+          );
+        }
+
+        await loadTeamStatuses();
+
+        setManagementMessage(
+          "全8チームを「" +
+            statusText +
+            "」に変更しました。",
+          "success"
+        );
+      } catch (error) {
+        console.error(error);
+
+        setManagementMessage(
+          "一括変更できませんでした: " +
+            error.message,
+          "error"
+        );
+      } finally {
+        setOperating(false);
+      }
+    }
+
+    async function initializeManagement() {
+      try {
+        const user =
+          await getCurrentSessionUser();
+
+        if (!user) {
+          showLogin();
+          return;
+        }
+
+        currentProfile =
+          await loadAdminProfile(
+            user.id
+          );
+
+        showManagement();
+        await loadTeamStatuses();
+
+        setManagementMessage(
+          "管理画面を読み込みました。",
+          "success"
+        );
+      } catch (error) {
+        console.error(error);
+
+        await supabaseClient.auth
+          .signOut();
+
+        showLogin();
+
+        setLoginMessage(
+          "ログイン情報を確認できませんでした: " +
+            error.message,
+          "error"
+        );
+      }
+    }
+
+    loginForm.addEventListener(
+      "submit",
+      async function (event) {
+        event.preventDefault();
+
+        if (isOperating) {
+          return;
+        }
+
+        const password =
+          passwordInput.value;
+
+        if (!password) {
+          setLoginMessage(
+            "パスワードを入力してください。",
+            "error"
+          );
+
+          return;
+        }
+
+        setOperating(true);
+
+        setLoginMessage(
+          "ログインしています...",
+          ""
+        );
+
+        try {
+          const {
+            data,
+            error
+          } =
+            await supabaseClient.auth
+              .signInWithPassword({
+                email: AUTH_EMAIL,
+                password: password
+              });
+
+          if (error) {
+            throw error;
+          }
+
+          currentProfile =
+            await loadAdminProfile(
+              data.user.id
+            );
+
+          passwordInput.value = "";
+
+          showManagement();
+          await loadTeamStatuses();
+
+          setLoginMessage("", "");
+
+          setManagementMessage(
+            "ログインしました。",
+            "success"
+          );
+        } catch (error) {
+          console.error(error);
+
+          await supabaseClient.auth
+            .signOut();
+
+          setLoginMessage(
+            "ログインできませんでした。IDまたはパスワードを確認してください。",
+            "error"
+          );
+        } finally {
+          setOperating(false);
+        }
+      }
+    );
+
+    logoutButton.addEventListener(
+      "click",
+      async function () {
+        const confirmed =
+          window.confirm(
+            "ログアウトしますか？"
+          );
+
+        if (!confirmed) {
+          return;
+        }
+
+        setOperating(true);
+
+        try {
+          await supabaseClient.auth
+            .signOut();
+
+          showLogin();
+
+          setLoginMessage(
+            "ログアウトしました。",
+            "success"
+          );
+        } catch (error) {
+          console.error(error);
+
+          setManagementMessage(
+            "ログアウトできませんでした: " +
+              error.message,
+            "error"
+          );
+        } finally {
+          setOperating(false);
+        }
+      }
+    );
+
+    reloadButton.addEventListener(
+      "click",
+      async function () {
+        setOperating(true);
+
+        setManagementMessage(
+          "最新状態を取得しています...",
+          ""
+        );
+
+        try {
+          await loadTeamStatuses();
+
+          setManagementMessage(
+            "最新状態を取得しました。",
+            "success"
+          );
+        } catch (error) {
+          console.error(error);
+
+          setManagementMessage(
+            "最新状態を取得できませんでした: " +
+              error.message,
+            "error"
+          );
+        } finally {
+          setOperating(false);
+        }
+      }
+    );
+
+    allActiveButton.addEventListener(
+      "click",
+      function () {
+        updateAllTeams("active");
+      }
+    );
+
+    allWaitingButton.addEventListener(
+      "click",
+      function () {
+        updateAllTeams("waiting");
+      }
+    );
+
+    teamList.addEventListener(
+      "click",
+      function (event) {
+        const button =
+          event.target.closest(
+            "button[data-team-id]"
+          );
+
+        if (!button) {
+          return;
+        }
+
+        updateSingleTeam(
+          button.dataset.teamId,
+          button.dataset.status
+        );
+      }
+    );
+
+    initializeManagement();
+  </script>
+</body>
+</html>
