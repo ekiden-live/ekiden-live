@@ -459,79 +459,6 @@
         grid-template-columns: 1fr;
       }
     }
-    .checkpoint-section {
-  min-width: 0;
-  margin-top: 12px;
-  padding: 14px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.checkpoint-section h2 {
-  margin: 0 0 8px;
-  padding-bottom: 6px;
-  font-size: 1.25rem;
-  border-bottom: 3px solid var(--primary);
-}
-
-.checkpoint-guide {
-  margin: 0 0 12px;
-  font-size: 1rem;
-  line-height: 1.7;
-}
-
-.checkpoint-list {
-  display: grid;
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-  gap: 9px;
-}
-
-.checkpoint-list-item {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  min-width: 0;
-  padding: 10px;
-  color: var(--text);
-  text-decoration: none;
-  background: #f8fafb;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.checkpoint-list-item:hover,
-.checkpoint-list-item:focus {
-  background: #eef6fc;
-  border-color: var(--primary);
-}
-
-.checkpoint-list-symbol {
-  display: inline-flex;
-  flex: 0 0 36px;
-  width: 36px;
-  height: 36px;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 0.86rem;
-  font-weight: bold;
-  border: 3px solid #fff;
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 2px #17212b;
-}
-
-.checkpoint-list-name {
-  min-width: 0;
-  font-size: 1rem;
-  font-weight: bold;
-  line-height: 1.6;
-  overflow-wrap: anywhere;
-}
 
 .checkpoint-map-icon {
   background: transparent;
@@ -541,6 +468,22 @@
 .checkpoint-marker {
   display: flex;
   align-items: flex-start;
+}
+    
+.checkpoint-label-left {
+  flex-direction: row-reverse;
+}
+
+.checkpoint-label-left .checkpoint-marker-label {
+  margin: 0 7px 0 0;
+}
+
+.checkpoint-label-right {
+  flex-direction: row;
+}
+
+.checkpoint-label-right .checkpoint-marker-label {
+  margin: 0 0 0 7px;
 }
 
 .checkpoint-marker-symbol {
@@ -563,14 +506,13 @@
 
 .checkpoint-marker-label {
   width: max-content;
-  max-width: 270px;
-  margin: 0 0 0 7px;
+  max-width: none;
   padding: 6px 9px;
   color: #111;
   font-size: 16px;
   font-weight: bold;
   line-height: 1.55;
-  white-space: normal;
+  white-space: nowrap;
   overflow-wrap: anywhere;
   background: rgba(255, 255, 255, 0.97);
   border: 2px solid #17212b;
@@ -606,8 +548,9 @@
   }
 
   .checkpoint-marker-label {
-    max-width: 190px;
+    max-width: none;
     font-size: 14px;
+    white-space: nowrap;
   }
 }
 
@@ -641,24 +584,6 @@
       role="application"
       aria-label="チーム位置情報地図"
     ></div>
-    <section
-  class="checkpoint-section"
-  aria-labelledby="checkpointHeading"
->
-  <h2 id="checkpointHeading">
-    スタート・中継所・ゴール
-  </h2>
-
-  <p class="checkpoint-guide">
-    地図上の地点名を押すと、詳しい情報と
-    Googleマップへのリンクを確認できます。
-  </p>
-
-  <div
-    id="checkpointList"
-    class="checkpoint-list"
-  ></div>
-</section>
 
     <section class="class-section">
       <h2>Aクラス</h2>
@@ -770,47 +695,40 @@
     latitude: 31.907079,
     longitude: 130.422079,
     color: "#18743a",
-    mapUrl:
-      "https://maps.app.goo.gl/YKFAsGfd1TWKoVWM6"
+    labelSide: "left"
   },
   {
     id: "relay-1-8",
     symbol: "1・8",
-    label:
-      "第1中継所・第8中継所",
+    label: "第1中継所・第8中継所",
     popupLabel:
       "第1中継所<br>第8中継所",
     latitude: 31.919103,
     longitude: 130.419869,
     color: "#1565c0",
-    mapUrl:
-      "https://maps.app.goo.gl/1w26guVqrH7fSvgo8"
+    labelSide: "right"
   },
   {
     id: "relay-2-9",
     symbol: "2・9",
-    label:
-      "第2中継所・第9中継所",
+    label: "第2中継所・第9中継所",
     popupLabel:
       "第2中継所<br>第9中継所",
     latitude: 31.924584,
     longitude: 130.409296,
     color: "#1565c0",
-    mapUrl:
-      "https://maps.app.goo.gl/DCtMRptKRCEnfTdd8"
+    labelSide: "right"
   },
   {
     id: "relay-3-10",
     symbol: "3・10",
-    label:
-      "第3中継所・第10中継所",
+    label: "第3中継所・第10中継所",
     popupLabel:
       "第3中継所<br>第10中継所",
     latitude: 31.911966,
     longitude: 130.418444,
     color: "#1565c0",
-    mapUrl:
-      "https://maps.app.goo.gl/KDLUyVJmaN5eRCfW8"
+    labelSide: "left"
   },
   {
     id: "relay-5",
@@ -820,8 +738,7 @@
     latitude: 31.901136,
     longitude: 130.430549,
     color: "#1565c0",
-    mapUrl:
-      "https://maps.app.goo.gl/HNthidqtxAByVem4A"
+    labelSide: "left"
   },
   {
     id: "relay-6",
@@ -831,8 +748,7 @@
     latitude: 31.898829,
     longitude: 130.435256,
     color: "#1565c0",
-    mapUrl:
-      "https://maps.app.goo.gl/tQK8nrxbBAXEFyEi6"
+    labelSide: "right"
   },
   {
     id: "relay-12",
@@ -842,8 +758,7 @@
     latitude: 31.899338,
     longitude: 130.432334,
     color: "#1565c0",
-    mapUrl:
-      "https://maps.app.goo.gl/n2ZUoTiYgkQgXmSJ6"
+    labelSide: "left"
   },
   {
     id: "goal",
@@ -853,8 +768,7 @@
     latitude: 31.905936,
     longitude: 130.432956,
     color: "#b42318",
-    mapUrl:
-      "https://maps.app.goo.gl/oDqizKfA1ypiGUNB7"
+    labelSide: "right"
   }
 ];
 
@@ -884,11 +798,6 @@
         "classBList"
       );
     
-    const checkpointList =
-  document.getElementById(
-    "checkpointList"
-  );
-
     const map = L.map("map", {
       zoomControl: true
     }).setView(
@@ -1032,40 +941,31 @@
         STALE_LIMIT_MS
       );
     }
-    function createCheckpointIcon(
-  checkpoint
-) {
-  const labelHtml =
-    checkpoint.label
-      .split("・")
-      .map(function (item) {
-        return escapeHtml(item);
-      })
-      .join("・<wbr>");
+    function createCheckpointIcon(checkpoint) {
+  const side =
+    checkpoint.labelSide === "left"
+      ? "left"
+      : "right";
 
   const html =
-    '<div class="checkpoint-marker">' +
-      '<span class="' +
-        'checkpoint-marker-symbol" ' +
-        'style="background:' +
-        escapeHtml(
-          checkpoint.color
-        ) +
+    '<div class="checkpoint-marker checkpoint-label-' +
+      side +
+    '">' +
+      '<span class="checkpoint-marker-symbol" style="' +
+        "background:" +
+        escapeHtml(checkpoint.color) +
       '">' +
-        escapeHtml(
-          checkpoint.symbol
-        ) +
+        escapeHtml(checkpoint.symbol) +
       "</span>" +
-      '<span class="' +
-        'checkpoint-marker-label">' +
-        labelHtml +
+      '<span class="checkpoint-marker-label">' +
+        escapeHtml(checkpoint.label) +
       "</span>" +
     "</div>";
 
   return L.divIcon({
     className: "checkpoint-map-icon",
     html: html,
-    iconSize: [320, 90],
+    iconSize: [38, 38],
     iconAnchor: [19, 19],
     popupAnchor: [0, -22]
   });
@@ -1115,53 +1015,6 @@ function createCheckpointMarkers() {
         createCheckpointPopup(
           checkpoint
         )
-      );
-    }
-  );
-}
-
-function createCheckpointList() {
-  checkpointList.innerHTML = "";
-
-  CHECKPOINTS.forEach(
-    function (checkpoint) {
-      const link =
-        document.createElement("a");
-
-      link.className =
-        "checkpoint-list-item";
-
-      link.href = checkpoint.mapUrl;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-
-      link.setAttribute(
-        "aria-label",
-        checkpoint.label +
-          "をGoogleマップで開く"
-      );
-
-      link.innerHTML =
-        '<span class="' +
-          'checkpoint-list-symbol" ' +
-          'style="background:' +
-          escapeHtml(
-            checkpoint.color
-          ) +
-        '">' +
-          escapeHtml(
-            checkpoint.symbol
-          ) +
-        "</span>" +
-        '<span class="' +
-          'checkpoint-list-name">' +
-          escapeHtml(
-            checkpoint.label
-          ) +
-        "</span>";
-
-      checkpointList.appendChild(
-        link
       );
     }
   );
@@ -1809,8 +1662,7 @@ function createCheckpointList() {
     }
 
     createCheckpointMarkers();
-createCheckpointList();
-createTeamCards();
+    createTeamCards();
 
 refreshButton.addEventListener(
 
