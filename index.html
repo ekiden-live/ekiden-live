@@ -950,20 +950,14 @@
     }
     function createCheckpointIcon(checkpoint) {
   const side =
-  checkpoint.labelSide === "left"
-    ? "left"
-    : "right";
+    checkpoint.labelSide === "left"
+      ? "left"
+      : "right";
 
-const extraClass =
-  checkpoint.labelClass
-    ? " " + checkpoint.labelClass
-    : "";
-
-const html =
-  '<div class="checkpoint-marker checkpoint-label-' +
-    side +
-    extraClass +
-  '">' +
+  const html =
+    '<div class="checkpoint-marker checkpoint-label-' +
+      side +
+    '">' +
       '<span class="checkpoint-marker-symbol" style="' +
         "background:" +
         escapeHtml(checkpoint.color) +
