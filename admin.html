@@ -834,51 +834,37 @@
     }
 
     async function loadTeamStatuses() {
-      const {
-  data: updatedRows,
-  error
-} =
-  await supabaseClient
-    .from("team_status")
-    .update(updateValues)
-    .in(
-      "team_id",
-      TEAMS.map(function (team) {
-        return team.id;
-      })
-    )
-    .select("team_id,status");
+  const {
+    data,
+    error
+  } =
+    await supabaseClient
+      .from("team_status")
+      .select(
+        "team_id,status,finished_at,updated_at"
+      )
+      .in(
+        "team_id",
+        TEAMS.map(function (team) {
+          return team.id;
+        })
+      );
 
-if (error) {
-  throw error;
+  if (error) {
+    throw error;
+  }
+
+  currentStatuses = new Map();
+
+  (data || []).forEach(function (row) {
+    currentStatuses.set(
+      row.team_id,
+      row
+    );
+  });
+
+  renderTeamCards();
 }
-
-if (
-  !Array.isArray(updatedRows) ||
-  updatedRows.length !== TEAMS.length
-) {
-  throw new Error(
-    "更新できたチームは" +
-      (
-        Array.isArray(updatedRows)
-          ? updatedRows.length
-          : 0
-      ) +
-      "件です。8件すべてを更新できませんでした。"
-  );
-}
-
-      currentStatuses = new Map();
-
-      data.forEach(function (row) {
-        currentStatuses.set(
-          row.team_id,
-          row
-        );
-      });
-
-      renderTeamCards();
-    }
 
     function renderTeamCards() {
       teamList.innerHTML = "";
@@ -1154,21 +1140,38 @@ if (
         };
 
         const {
-          error
-        } =
-          await supabaseClient
-            .from("team_status")
-            .update(updateValues)
-            .in(
-              "team_id",
-              TEAMS.map(function (team) {
-                return team.id;
-              })
-            );
+  data: updatedRows,
+  error
+} =
+  await supabaseClient
+    .from("team_status")
+    .update(updateValues)
+    .in(
+      "team_id",
+      TEAMS.map(function (team) {
+        return team.id;
+      })
+    )
+    .select("team_id,status");
 
-        if (error) {
-          throw error;
-        }
+if (error) {
+  throw error;
+}
+
+if (
+  !Array.isArray(updatedRows) ||
+  updatedRows.length !== TEAMS.length
+) {
+  throw new Error(
+    "更新できたチームは" +
+      (
+        Array.isArray(updatedRows)
+          ? updatedRows.length
+          : 0
+      ) +
+      "件です。8件すべてを更新できませんでした。"
+  );
+}
 
         for (const team of TEAMS) {
           await insertActionLog(
