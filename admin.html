@@ -1305,8 +1305,7 @@ if (
             .signOut();
 
           setLoginMessage(
-            "ログインできませんでした: " +
-      (error?.message || "不明なエラー"),
+            "ログインできませんでした。IDまたはパスワードを確認してください。",
             "error"
           );
         } finally {
