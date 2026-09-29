@@ -835,24 +835,38 @@
 
     async function loadTeamStatuses() {
       const {
-        data,
-        error
-      } =
-        await supabaseClient
-          .from("team_status")
-          .select(
-            "team_id,status,finished_at,updated_at"
-          )
-          .in(
-            "team_id",
-            TEAMS.map(function (team) {
-              return team.id;
-            })
-          );
+  data: updatedRows,
+  error
+} =
+  await supabaseClient
+    .from("team_status")
+    .update(updateValues)
+    .in(
+      "team_id",
+      TEAMS.map(function (team) {
+        return team.id;
+      })
+    )
+    .select("team_id,status");
 
-      if (error) {
-        throw error;
-      }
+if (error) {
+  throw error;
+}
+
+if (
+  !Array.isArray(updatedRows) ||
+  updatedRows.length !== TEAMS.length
+) {
+  throw new Error(
+    "更新できたチームは" +
+      (
+        Array.isArray(updatedRows)
+          ? updatedRows.length
+          : 0
+      ) +
+      "件です。8件すべてを更新できませんでした。"
+  );
+}
 
       currentStatuses = new Map();
 
@@ -1043,16 +1057,27 @@
         }
 
         const {
-          error
-        } =
-          await supabaseClient
-            .from("team_status")
-            .update(updateValues)
-            .eq("team_id", teamId);
+  data: updatedRows,
+  error
+} =
+  await supabaseClient
+    .from("team_status")
+    .update(updateValues)
+    .eq("team_id", teamId)
+    .select("team_id,status");
 
-        if (error) {
-          throw error;
-        }
+if (error) {
+  throw error;
+}
+
+if (
+  !Array.isArray(updatedRows) ||
+  updatedRows.length !== 1
+) {
+  throw new Error(
+    "対象チームを更新できませんでした。"
+  );
+}
 
         await insertActionLog(
           teamId,
