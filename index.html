@@ -571,6 +571,49 @@
   word-break: keep-all !important;
   flex-shrink: 0 !important;
 }
+.checkpoint-map-icon {
+  overflow: visible !important;
+}
+
+.checkpoint-marker {
+  display: flex !important;
+  width: max-content !important;
+  min-width: max-content !important;
+  align-items: flex-start !important;
+  overflow: visible !important;
+}
+
+.checkpoint-marker-symbol {
+  flex: 0 0 38px !important;
+}
+
+.checkpoint-marker-label {
+  display: block !important;
+  width: auto !important;
+  min-width: max-content !important;
+  max-width: none !important;
+  flex: 0 0 auto !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+}
+
+.checkpoint-label-left {
+  flex-direction: row-reverse !important;
+}
+
+.checkpoint-label-left .checkpoint-marker-label {
+  margin: 0 7px 0 0 !important;
+}
+
+.checkpoint-label-right {
+  flex-direction: row !important;
+}
+
+.checkpoint-label-right .checkpoint-marker-label {
+  margin: 0 0 0 7px !important;
+}
 
   </style>
 </head>
@@ -960,14 +1003,14 @@
       );
     }
     function createCheckpointIcon(checkpoint) {
-  const side =
-    checkpoint.labelSide === "left"
-      ? "left"
-      : "right";
+  const isLeft =
+    checkpoint.labelSide === "left";
 
   const html =
-    '<div class="checkpoint-marker checkpoint-label-' +
-      side +
+    '<div class="checkpoint-marker ' +
+      (isLeft
+        ? "checkpoint-label-left"
+        : "checkpoint-label-right") +
     '">' +
       '<span class="checkpoint-marker-symbol" style="' +
         "background:" +
@@ -983,33 +1026,19 @@
   return L.divIcon({
     className: "checkpoint-map-icon",
     html: html,
-    iconSize: [38, 38],
-    iconAnchor: [19, 19],
-    popupAnchor: [0, -22]
-  });
-}
 
-function createCheckpointPopup(
-  checkpoint
-) {
-  return (
-    '<div class="checkpoint-popup">' +
-      '<strong class="' +
-        'checkpoint-popup-title">' +
-        checkpoint.popupLabel +
-      "</strong><br>" +
-      '<a class="' +
-        'checkpoint-popup-link" ' +
-        'href="' +
-        escapeHtml(
-          checkpoint.mapUrl
-        ) +
-        '" target="_blank" ' +
-        'rel="noopener noreferrer">' +
-        "Googleマップで開く" +
-      "</a>" +
-    "</div>"
-  );
+    /*
+     * ラベルを含めた十分な横幅を確保します。
+     */
+    iconSize: [300, 50],
+
+    /*
+     * 左右表示に応じて、丸印を地点座標に合わせます。
+     */
+    iconAnchor: isLeft
+      ? [281, 19]
+      : [19, 19]
+  });
 }
 
 function createCheckpointMarkers() {
@@ -1020,20 +1049,15 @@ function createCheckpointMarkers() {
         checkpoint.longitude
       ];
 
-      const marker =
-        L.marker(position, {
-          icon:
-            createCheckpointIcon(
-              checkpoint
-            ),
-          zIndexOffset: -500
-        }).addTo(map);
-
-      marker.bindPopup(
-        createCheckpointPopup(
-          checkpoint
-        )
-      );
+      L.marker(position, {
+        icon:
+          createCheckpointIcon(
+            checkpoint
+          ),
+        zIndexOffset: -500,
+        interactive: false,
+        keyboard: false
+      }).addTo(map);
     }
   );
 }
