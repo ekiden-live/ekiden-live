@@ -1003,14 +1003,14 @@
       );
     }
     function createCheckpointIcon(checkpoint) {
-  const isLeft =
-    checkpoint.labelSide === "left";
+  const side =
+    checkpoint.labelSide === "left"
+      ? "left"
+      : "right";
 
   const html =
-    '<div class="checkpoint-marker ' +
-      (isLeft
-        ? "checkpoint-label-left"
-        : "checkpoint-label-right") +
+    '<div class="checkpoint-marker checkpoint-label-' +
+      side +
     '">' +
       '<span class="checkpoint-marker-symbol" style="' +
         "background:" +
@@ -1026,18 +1026,8 @@
   return L.divIcon({
     className: "checkpoint-map-icon",
     html: html,
-
-    /*
-     * ラベルを含めた十分な横幅を確保します。
-     */
-    iconSize: [300, 50],
-
-    /*
-     * 左右表示に応じて、丸印を地点座標に合わせます。
-     */
-    iconAnchor: isLeft
-      ? [281, 19]
-      : [19, 19]
+    iconSize: [38, 38],
+    iconAnchor: [19, 19]
   });
 }
 
