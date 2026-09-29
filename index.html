@@ -91,7 +91,8 @@
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     #overallStatus {
@@ -140,7 +141,8 @@
       background: #dfe8ee;
       border: 1px solid #bfcbd4;
       border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      box-shadow:
+        0 2px 10px rgba(0, 0, 0, 0.08);
     }
 
     .class-section {
@@ -150,7 +152,8 @@
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .class-section h2 {
@@ -237,6 +240,7 @@
       font-weight: bold;
     }
 
+    /* チーム位置マーカー */
     .map-team-icon {
       background: transparent;
       border: 0;
@@ -286,6 +290,69 @@
 
     .leaflet-popup-content {
       line-height: 1.7;
+    }
+
+    /*
+     * 固定地点マーカー
+     * 丸印を38px領域に固定し、地点名だけを左右へ表示します。
+     */
+    .checkpoint-map-icon {
+      overflow: visible !important;
+      background: transparent !important;
+      border: 0 !important;
+    }
+
+    .checkpoint-marker {
+      position: relative;
+      width: 38px;
+      height: 38px;
+    }
+
+    .checkpoint-marker-symbol {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: bold;
+      line-height: 1;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 2px #17212b,
+        0 2px 6px rgba(0, 0, 0, 0.45);
+    }
+
+    .checkpoint-marker-label {
+      position: absolute;
+      top: 0;
+      display: block;
+      width: max-content;
+      max-width: none;
+      padding: 6px 9px;
+      color: #111;
+      font-size: 16px;
+      font-weight: bold;
+      line-height: 1.55;
+      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.97);
+      border: 2px solid #17212b;
+      border-radius: 6px;
+      box-shadow:
+        0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .checkpoint-label-left .checkpoint-marker-label {
+      right: 45px;
+    }
+
+    .checkpoint-label-right .checkpoint-marker-label {
+      left: 45px;
     }
 
     footer {
@@ -452,6 +519,10 @@
       .team-name {
         font-size: 0.9rem;
       }
+
+      .checkpoint-marker-label {
+        font-size: 14px;
+      }
     }
 
     @media (max-width: 360px) {
@@ -459,154 +530,6 @@
         grid-template-columns: 1fr;
       }
     }
-
-.checkpoint-map-icon {
-  background: transparent;
-  border: 0;
-}
-
-.checkpoint-marker {
-  display: flex;
-  align-items: flex-start;
-}
-    
-.checkpoint-label-left {
-  flex-direction: row-reverse;
-}
-
-.checkpoint-label-left .checkpoint-marker-label {
-  margin: 0 7px 0 0;
-}
-
-.checkpoint-label-right {
-  flex-direction: row;
-}
-
-.checkpoint-label-right .checkpoint-marker-label {
-  margin: 0 0 0 7px;
-}
-    .checkpoint-label-lower-left .checkpoint-marker-label {
-  transform: translateY(26px);
-}
-
-.checkpoint-marker-symbol {
-  display: inline-flex;
-  flex: 0 0 38px;
-  width: 38px;
-  height: 38px;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: bold;
-  line-height: 1;
-  border: 3px solid #fff;
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 2px #17212b,
-    0 2px 6px rgba(0, 0, 0, 0.45);
-}
-
-.checkpoint-marker-label {
-  width: max-content;
-  max-width: none;
-  padding: 6px 9px;
-  color: #111;
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 1.55;
-  white-space: nowrap;
-  overflow-wrap: normal;
-  word-break: keep-all;
-  background: rgba(255, 255, 255, 0.97);
-  border: 2px solid #17212b;
-  border-radius: 6px;
-  box-shadow:
-    0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-.checkpoint-popup {
-  min-width: 220px;
-  font-size: 15px;
-  line-height: 1.7;
-}
-
-.checkpoint-popup-title {
-  font-size: 16px;
-}
-
-.checkpoint-popup-link {
-  display: inline-block;
-  margin-top: 8px;
-  padding: 7px 10px;
-  color: #fff !important;
-  font-weight: bold;
-  text-decoration: none;
-  background: var(--primary);
-  border-radius: 6px;
-}
-
-@media (max-width: 600px) {
-  .checkpoint-list {
-    grid-template-columns: 1fr;
-  }
-
-  .checkpoint-marker-label {
-    width: max-content;
-    max-width: none;
-    font-size: 14px;
-    white-space: nowrap;
-    overflow-wrap: normal;
-    word-break: keep-all;
-  }
-}
-    
-.checkpoint-marker-label {
-  display: inline-block !important;
-  width: max-content !important;
-  min-width: max-content !important;
-  max-width: none !important;
-  white-space: nowrap !important;
-  overflow-wrap: normal !important;
-  word-break: keep-all !important;
-  flex-shrink: 0 !important;
-}
-.checkpoint-map-icon {
-  overflow: visible !important;
-}
-
-.checkpoint-marker-symbol {
-  flex: 0 0 38px !important;
-}
-
-.checkpoint-marker-label {
-  display: block !important;
-  width: auto !important;
-  min-width: max-content !important;
-  max-width: none !important;
-  flex: 0 0 auto !important;
-  white-space: nowrap !important;
-  overflow: visible !important;
-  overflow-wrap: normal !important;
-  word-break: keep-all !important;
-}
-
-.checkpoint-label-left {
-  flex-direction: row-reverse !important;
-}
-
-.checkpoint-label-left .checkpoint-marker-label {
-  margin: 0 7px 0 0 !important;
-}
-
-.checkpoint-label-right {
-  flex-direction: row !important;
-}
-
-.checkpoint-label-right .checkpoint-marker-label {
-  margin: 0 0 0 7px !important;
-}
-
   </style>
 </head>
 
@@ -733,97 +656,83 @@
         colorCode: "#795548"
       }
     ];
+
     const CHECKPOINTS = [
-  {
-    id: "start-4-7-11",
-    symbol: "始",
-    label:
-      "スタート・第4中継所・" +
-      "第7中継所・第11中継所",
-    popupLabel:
-      "スタート<br>" +
-      "第4中継所<br>" +
-      "第7中継所<br>" +
-      "第11中継所",
-    latitude: 31.907079,
-    longitude: 130.422079,
-    color: "#18743a",
-    labelSide: "left"
-  },
-  {
-    id: "relay-1-8",
-    symbol: "1・8",
-    label: "第1中継所・第8中継所",
-    popupLabel:
-      "第1中継所<br>第8中継所",
-    latitude: 31.919103,
-    longitude: 130.419869,
-    color: "#1565c0",
-    labelSide: "right"
-  },
-  {
-    id: "relay-2-9",
-    symbol: "2・9",
-    label: "第2中継所・第9中継所",
-    popupLabel:
-      "第2中継所<br>第9中継所",
-    latitude: 31.924584,
-    longitude: 130.409296,
-    color: "#1565c0",
-    labelSide: "right"
-  },
-  {
-    id: "relay-3-10",
-    symbol: "3･10",
-    label: "第3中継所・第10中継所",
-    popupLabel:
-      "第3中継所<br>第10中継所",
-    latitude: 31.911966,
-    longitude: 130.418444,
-    color: "#1565c0",
-    labelSide: "left"
-  },
-  {
-    id: "relay-5",
-    symbol: "5",
-    label: "第5中継所",
-    popupLabel: "第5中継所",
-    latitude: 31.901136,
-    longitude: 130.430549,
-    color: "#1565c0",
-    labelSide: "left"
-  },
-  {
-    id: "relay-6",
-    symbol: "6",
-    label: "第6中継所",
-    popupLabel: "第6中継所",
-    latitude: 31.898829,
-    longitude: 130.435256,
-    color: "#1565c0",
-    labelSide: "right"
-  },
-  {
-    id: "relay-12",
-    symbol: "12",
-    label: "第12中継所",
-    popupLabel: "第12中継所",
-    latitude: 31.899338,
-    longitude: 130.432334,
-    color: "#1565c0",
-    labelSide: "left"
-  },
-  {
-    id: "goal",
-    symbol: "終",
-    label: "ゴール",
-    popupLabel: "ゴール",
-    latitude: 31.905936,
-    longitude: 130.432956,
-    color: "#b42318",
-    labelSide: "right"
-  }
-];
+      {
+        id: "start-4-7-11",
+        symbol: "始",
+        label:
+          "スタート・第4中継所・" +
+          "第7中継所・第11中継所",
+        latitude: 31.907079,
+        longitude: 130.422079,
+        color: "#18743a",
+        labelSide: "left"
+      },
+      {
+        id: "relay-1-8",
+        symbol: "1・8",
+        label: "第1中継所・第8中継所",
+        latitude: 31.919103,
+        longitude: 130.419869,
+        color: "#1565c0",
+        labelSide: "right"
+      },
+      {
+        id: "relay-2-9",
+        symbol: "2・9",
+        label: "第2中継所・第9中継所",
+        latitude: 31.924584,
+        longitude: 130.409296,
+        color: "#1565c0",
+        labelSide: "right"
+      },
+      {
+        id: "relay-3-10",
+        symbol: "3・10",
+        label: "第3中継所・第10中継所",
+        latitude: 31.911966,
+        longitude: 130.418444,
+        color: "#1565c0",
+        labelSide: "left"
+      },
+      {
+        id: "relay-5",
+        symbol: "5",
+        label: "第5中継所",
+        latitude: 31.901136,
+        longitude: 130.430549,
+        color: "#1565c0",
+        labelSide: "left"
+      },
+      {
+        id: "relay-6",
+        symbol: "6",
+        label: "第6中継所",
+        latitude: 31.898829,
+        longitude: 130.435256,
+        color: "#1565c0",
+        labelSide: "right"
+      },
+      {
+        id: "relay-12",
+        symbol: "12",
+        label: "第12中継所",
+        latitude: 31.899338,
+        longitude: 130.432334,
+        color: "#1565c0",
+        labelSide: "left"
+      },
+      {
+        id: "goal",
+        symbol: "終",
+        label: "ゴール",
+        latitude: 31.905936,
+        longitude: 130.432956,
+        color: "#b42318",
+        labelSide: "right"
+      }
+    ];
 
     const teamById = new Map(
       TEAMS.map(function (team) {
@@ -850,7 +759,7 @@
       document.getElementById(
         "classBList"
       );
-    
+
     const map = L.map("map", {
       zoomControl: true
     }).setView(
@@ -904,8 +813,7 @@
         return "-";
       }
 
-      const time =
-        new Date(value).getTime();
+      const time = new Date(value).getTime();
 
       if (!Number.isFinite(time)) {
         return "-";
@@ -941,9 +849,7 @@
       return days + "日前";
     }
 
-    function getManagementStatusText(
-      status
-    ) {
+    function getManagementStatusText(status) {
       switch (status) {
         case "waiting":
           return "開始前";
@@ -959,9 +865,7 @@
       }
     }
 
-    function getManagementStatusClass(
-      status
-    ) {
+    function getManagementStatusClass(status) {
       switch (status) {
         case "waiting":
           return "status-waiting";
@@ -994,55 +898,56 @@
         STALE_LIMIT_MS
       );
     }
+
     function createCheckpointIcon(checkpoint) {
-  const side =
-    checkpoint.labelSide === "left"
-      ? "left"
-      : "right";
+      const side =
+        checkpoint.labelSide === "left"
+          ? "left"
+          : "right";
 
-  const html =
-    '<div class="checkpoint-marker checkpoint-label-' +
-      side +
-    '">' +
-      '<span class="checkpoint-marker-symbol" style="' +
-        "background:" +
-        escapeHtml(checkpoint.color) +
-      '">' +
-        escapeHtml(checkpoint.symbol) +
-      "</span>" +
-      '<span class="checkpoint-marker-label">' +
-        escapeHtml(checkpoint.label) +
-      "</span>" +
-    "</div>";
+      const html =
+        '<div class="checkpoint-marker checkpoint-label-' +
+          side +
+        '">' +
+          '<span class="checkpoint-marker-symbol" style="' +
+            "background:" +
+            escapeHtml(checkpoint.color) +
+          '">' +
+            escapeHtml(checkpoint.symbol) +
+          "</span>" +
+          '<span class="checkpoint-marker-label">' +
+            escapeHtml(checkpoint.label) +
+          "</span>" +
+        "</div>";
 
-  return L.divIcon({
-    className: "checkpoint-map-icon",
-    html: html,
-    iconSize: [38, 38],
-    iconAnchor: [19, 19]
-  });
-}
-
-function createCheckpointMarkers() {
-  CHECKPOINTS.forEach(
-    function (checkpoint) {
-      const position = [
-        checkpoint.latitude,
-        checkpoint.longitude
-      ];
-
-      L.marker(position, {
-        icon:
-          createCheckpointIcon(
-            checkpoint
-          ),
-        zIndexOffset: -500,
-        interactive: false,
-        keyboard: false
-      }).addTo(map);
+      return L.divIcon({
+        className: "checkpoint-map-icon",
+        html: html,
+        iconSize: [38, 38],
+        iconAnchor: [19, 19]
+      });
     }
-  );
-}
+
+    function createCheckpointMarkers() {
+      CHECKPOINTS.forEach(
+        function (checkpoint) {
+          const position = [
+            checkpoint.latitude,
+            checkpoint.longitude
+          ];
+
+          L.marker(position, {
+            icon:
+              createCheckpointIcon(
+                checkpoint
+              ),
+            zIndexOffset: -500,
+            interactive: false,
+            keyboard: false
+          }).addTo(map);
+        }
+      );
+    }
 
     function createTeamCards() {
       TEAMS.forEach(function (team) {
@@ -1261,10 +1166,8 @@ function createCheckpointMarkers() {
         '">' +
           '<span class="marker-dot" style="' +
             "background:" +
-            escapeHtml(
-              team.colorCode
-            ) +
-            '"></span>' +
+            escapeHtml(team.colorCode) +
+          '"></span>' +
           '<span class="marker-label">' +
             escapeHtml(team.name) +
           "</span>" +
@@ -1356,6 +1259,7 @@ function createCheckpointMarkers() {
 
         if (oldCircle) {
           map.removeLayer(oldCircle);
+
           accuracyCircles.delete(
             team.id
           );
@@ -1497,9 +1401,7 @@ function createCheckpointMarkers() {
         );
     }
 
-    function renderAllTeams(
-      combinedState
-    ) {
+    function renderAllTeams(combinedState) {
       combinedState.forEach(
         function (state) {
           updateTeamCard(state);
@@ -1509,45 +1411,45 @@ function createCheckpointMarkers() {
     }
 
     function getAvailablePositions() {
-  const positions =
-    CHECKPOINTS.map(
-      function (checkpoint) {
-        return [
-          checkpoint.latitude,
-          checkpoint.longitude
-        ];
-      }
-    );
+      const positions =
+        CHECKPOINTS.map(
+          function (checkpoint) {
+            return [
+              checkpoint.latitude,
+              checkpoint.longitude
+            ];
+          }
+        );
 
-  latestStateByTeam.forEach(
-    function (state) {
-      const location =
-        state.location;
+      latestStateByTeam.forEach(
+        function (state) {
+          const location =
+            state.location;
 
-      if (!location) {
-        return;
-      }
+          if (!location) {
+            return;
+          }
 
-      const latitude =
-        Number(location.latitude);
+          const latitude =
+            Number(location.latitude);
 
-      const longitude =
-        Number(location.longitude);
+          const longitude =
+            Number(location.longitude);
 
-      if (
-        Number.isFinite(latitude) &&
-        Number.isFinite(longitude)
-      ) {
-        positions.push([
-          latitude,
-          longitude
-        ]);
-      }
+          if (
+            Number.isFinite(latitude) &&
+            Number.isFinite(longitude)
+          ) {
+            positions.push([
+              latitude,
+              longitude
+            ]);
+          }
+        }
+      );
+
+      return positions;
     }
-  );
-
-  return positions;
-}
 
     function fitAllTeams() {
       const positions =
@@ -1634,9 +1536,7 @@ function createCheckpointMarkers() {
           "<strong>更新完了:</strong> " +
           escapeHtml(
             lastSuccessfulRefreshAt
-              .toLocaleString(
-                "ja-JP"
-              )
+              .toLocaleString("ja-JP")
           ) +
           "<br>位置確認済み: " +
           locationCount +
@@ -1664,9 +1564,7 @@ function createCheckpointMarkers() {
         overallStatusElement.innerHTML =
           '<span class="error-message">' +
             "データを取得できませんでした: " +
-            escapeHtml(
-              error.message
-            ) +
+            escapeHtml(error.message) +
           "</span>" +
           (
             lastSuccessfulRefreshAt
@@ -1688,8 +1586,7 @@ function createCheckpointMarkers() {
     createCheckpointMarkers();
     createTeamCards();
 
-refreshButton.addEventListener(
-
+    refreshButton.addEventListener(
       "click",
       refreshAllData
     );
