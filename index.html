@@ -485,6 +485,9 @@
 .checkpoint-label-right .checkpoint-marker-label {
   margin: 0 0 0 7px;
 }
+    .checkpoint-label-lower-left .checkpoint-marker-label {
+  transform: translateY(26px);
+}
 
 .checkpoint-marker-symbol {
   display: inline-flex;
@@ -763,6 +766,7 @@
     longitude: 130.432334,
     color: "#1565c0",
     labelSide: "left"
+    labelClass: "checkpoint-label-lower-left"
   },
   {
     id: "goal",
@@ -947,14 +951,20 @@
     }
     function createCheckpointIcon(checkpoint) {
   const side =
-    checkpoint.labelSide === "left"
-      ? "left"
-      : "right";
+  checkpoint.labelSide === "left"
+    ? "left"
+    : "right";
 
-  const html =
-    '<div class="checkpoint-marker checkpoint-label-' +
-      side +
-    '">' +
+const extraClass =
+  checkpoint.labelClass
+    ? " " + checkpoint.labelClass
+    : "";
+
+const html =
+  '<div class="checkpoint-marker checkpoint-label-' +
+    side +
+    extraClass +
+  '">' +
       '<span class="checkpoint-marker-symbol" style="' +
         "background:" +
         escapeHtml(checkpoint.color) +
