@@ -513,7 +513,8 @@
   font-weight: bold;
   line-height: 1.55;
   white-space: nowrap;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: keep-all;
   background: rgba(255, 255, 255, 0.97);
   border: 2px solid #17212b;
   border-radius: 6px;
@@ -548,9 +549,12 @@
   }
 
   .checkpoint-marker-label {
+    width: max-content;
     max-width: none;
     font-size: 14px;
     white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: keep-all;
   }
 }
 
