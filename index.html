@@ -334,86 +334,83 @@
       line-height: 1.7;
     }
 
-    /* 固定地点マーカー（完全常時表示対策） */
-    .checkpoint-map-icon {
-      background: transparent !important;
-      border: 0 !important;
-      overflow: visible !important;
-    }
+ /* 固定地点マーカー
+   ズーム・移動時も常に表示するため専用レイヤーを使用 */
+.checkpoint-map-icon {
+  background: transparent !important;
+  border: 0 !important;
+  overflow: visible !important;
+  pointer-events: none !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
 
-    .checkpoint-marker {
-      position: relative;
-      width: 38px;
-      height: 38px;
-    }
+.checkpoint-marker {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: block;
+  overflow: visible;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
 
-    .checkpoint-marker-symbol {
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 38px;
-      height: 38px;
-      color: #fff;
-      font-size: 0.82rem;
-      font-weight: bold;
-      line-height: 1;
-      border: 3px solid #fff;
-      border-radius: 50%;
-      box-shadow:
-        0 0 0 2px #17212b,
-        0 2px 6px rgba(0, 0, 0, 0.45);
-    }
+.checkpoint-marker-symbol {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: bold;
+  line-height: 1;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 2px #17212b,
+    0 2px 6px rgba(0, 0, 0, 0.45);
+  visibility: visible !important;
+  opacity: 1 !important;
+}
 
-    .checkpoint-marker-label {
-      position: absolute;
-      top: 0;
-      display: block;
-      width: max-content;
-      max-width: none;
-      padding: 6px 9px;
-      color: #111;
-      font-size: 16px;
-      font-weight: bold;
-      line-height: 1.55;
-      white-space: nowrap;
-      background: rgba(255, 255, 255, 0.97);
-      border: 2px solid #17212b;
-      border-radius: 6px;
-      box-shadow:
-        0 2px 6px rgba(0, 0, 0, 0.3);
-    }
+.checkpoint-marker-label {
+  position: absolute;
+  top: 0;
+  display: block;
+  width: max-content;
+  max-width: none;
+  padding: 6px 9px;
+  color: #111;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1.55;
+  white-space: nowrap;
+  background: rgba(255, 255, 255, 0.97);
+  border: 2px solid #17212b;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  visibility: visible !important;
+  opacity: 1 !important;
+}
 
-    .checkpoint-label-left .checkpoint-marker-label {
-      right: 45px;
-    }
+.checkpoint-label-left .checkpoint-marker-label {
+  right: 45px;
+}
 
-    .checkpoint-label-right .checkpoint-marker-label {
-      left: 45px;
-    }
+.checkpoint-label-right .checkpoint-marker-label {
+  left: 45px;
+}
 
     footer {
       padding: 22px 16px 30px;
       color: #66737f;
       font-size: 0.85rem;
       text-align: center;
-    }
-
-    .leaflet-pane,
-    .leaflet-tile,
-    .leaflet-marker-icon,
-    .leaflet-marker-shadow,
-    .leaflet-tile-container,
-    .leaflet-pane > svg,
-    .leaflet-pane > canvas,
-    .leaflet-zoom-box,
-    .leaflet-image-layer,
-    .leaflet-layer {
-      position: absolute;
-      top: 0;
-      left: 0;
     }
 
     .leaflet-container {
@@ -853,11 +850,28 @@
       );
 
     const map = L.map("map", {
-      zoomControl: true
-    }).setView(
-      DEFAULT_MAP_CENTER,
-      DEFAULT_MAP_ZOOM
-    );
+  zoomControl: true,
+  zoomAnimation: true,
+  fadeAnimation: false,
+  markerZoomAnimation: true
+}).setView(
+  DEFAULT_MAP_CENTER,
+  DEFAULT_MAP_ZOOM
+);
+
+/*
+ * 固定地点専用のPaneを作成
+ *
+ * Leaflet標準のmarkerPaneより前面に配置することで、
+ * ズーム・移動・チーム位置マーカーの更新があっても
+ * スタート・中継所・ゴールを常に表示する。
+ */
+const checkpointPane = map.createPane("checkpointPane");
+
+checkpointPane.style.zIndex = "650";
+checkpointPane.style.pointerEvents = "none";
+checkpointPane.style.visibility = "visible";
+checkpointPane.style.opacity = "1";
 
     L.tileLayer(
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -1021,24 +1035,6 @@
     }
 
     function createCheckpointMarkers() {
-      CHECKPOINTS.forEach(
-        function (checkpoint) {
-          const position = [
-            checkpoint.latitude,
-            checkpoint.longitude
-          ];
-
-          // ズーム・移動時の消え防止としてpane、zIndex、optionsを最適化
-          L.marker(position, {
-            icon: createCheckpointIcon(checkpoint),
-            zIndexOffset: -1000,
-            interactive: false,
-            keyboard: false,
-            riseOnHover: false
-          }).addTo(map);
-        }
-      );
-    }
 
     function createTeamCards() {
       TEAMS.forEach(function (team) {
@@ -1727,6 +1723,40 @@
           );
       }
     );
+      
+      /*
+ * ズーム・移動後に固定地点マーカーを再描画
+ *
+ * スマートフォンではピンチズーム時にLeafletの
+ * DOM再配置が発生するため、ズーム終了後に
+ * 固定地点Paneを強制的に前面へ戻す。
+ */
+function refreshCheckpointLayer() {
+  const pane = map.getPane("checkpointPane");
+
+  if (!pane) {
+    return;
+  }
+
+  pane.style.zIndex = "650";
+  pane.style.visibility = "visible";
+  pane.style.opacity = "1";
+}
+
+/* ズーム終了時 */
+map.on("zoomend", function () {
+  refreshCheckpointLayer();
+});
+
+/* 地図移動終了時 */
+map.on("moveend", function () {
+  refreshCheckpointLayer();
+});
+
+/* 地図サイズ変更後 */
+map.on("resize", function () {
+  refreshCheckpointLayer();
+});
 
     window.addEventListener(
       "orientationchange",
