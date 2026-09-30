@@ -1035,6 +1035,38 @@ checkpointPane.style.opacity = "1";
     }
 
     function createCheckpointMarkers() {
+  CHECKPOINTS.forEach(function (checkpoint) {
+    const position = [
+      checkpoint.latitude,
+      checkpoint.longitude
+    ];
+
+    const marker = L.marker(position, {
+      icon: createCheckpointIcon(checkpoint),
+
+      // ★ 専用Paneに入れる
+      pane: "checkpointPane",
+
+      // ★ 通常のチームマーカーより十分前面
+      zIndexOffset: 10000,
+
+      // ★ 固定地点なのでクリック等は不要
+      interactive: false,
+      keyboard: false,
+      riseOnHover: false,
+
+      // ★ 常に表示
+      opacity: 1
+    });
+
+    marker.addTo(map);
+
+    /*
+     * マーカー生成直後に前面へ
+     */
+    marker.setZIndexOffset(10000);
+  });
+}
 
     function createTeamCards() {
       TEAMS.forEach(function (team) {
