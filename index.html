@@ -59,15 +59,18 @@
       border-bottom: 5px solid #f2c94c;
     }
 
-    /*
-     * PCでは左右に同じ幅の領域を確保します。
-     * キャラクターが左側にあっても、
-     * 文字部分はページ中央に配置されます。
-     */
+    /* ヘルパー：スマホとPCの表示切り替え用 */
+    .pc-only {
+      display: block;
+    }
+
+    .sp-only {
+      display: none;
+    }
+
     .header-pc-layout {
       display: grid;
-      grid-template-columns:
-        120px minmax(0, 1fr) 120px;
+      grid-template-columns: 120px minmax(0, 1fr) 120px;
       align-items: center;
       width: min(1100px, 100%);
       margin: 0 auto;
@@ -87,19 +90,23 @@
       text-align: center;
     }
 
-    .header-text h1 {
+    .header-text h1,
+    .header-text p {
       margin: 0;
-      font-size: clamp(1.7rem, 4vw, 3rem);
-      line-height: 1.35;
-      letter-spacing: 0.04em;
       text-align: center;
     }
 
     .header-text p {
-      margin: 8px 0 0;
+      margin-top: 8px;
       font-size: clamp(0.95rem, 2vw, 1.15rem);
-      text-align: center;
       opacity: 0.95;
+    }
+
+    /* スマホ用ヘッダーコンテナ（初期は非表示） */
+    .header-sp-layout {
+      display: none;
+      width: 100%;
+      text-align: center;
     }
 
     main {
@@ -324,10 +331,14 @@
 
     /*
      * 固定地点マーカー
-     * 丸印を登録された緯度・経度に固定します。
+     * スマホ等で地図を動かしたときに消えないよう、
+     * Leafletのクリッピング判定範囲を拡大する対策を施しています。
      */
-    .checkpoint-map-icon {
+    .leaflet-marker-pane .checkpoint-map-icon {
       overflow: visible !important;
+    }
+
+    .checkpoint-map-icon {
       background: transparent !important;
       border: 0 !important;
     }
@@ -377,13 +388,11 @@
         0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
-    .checkpoint-label-left
-      .checkpoint-marker-label {
+    .checkpoint-label-left .checkpoint-marker-label {
       right: 45px;
     }
 
-    .checkpoint-label-right
-      .checkpoint-marker-label {
+    .checkpoint-label-right .checkpoint-marker-label {
       left: 45px;
     }
 
@@ -395,7 +404,8 @@
     }
 
     /*
-     * Leaflet CSS読み込み失敗時の補助設定
+     * Leaflet CSSの読み込みに失敗した場合にも、
+     * 地図タイルの分割表示を防ぐための補助設定です。
      */
     .leaflet-pane,
     .leaflet-tile,
@@ -503,76 +513,49 @@
     }
 
     @media (max-width: 600px) {
-      /*
-       * スマホでは大会名を1段目、
-       * キャラクターとサブタイトルを2段目にします。
-       */
-      .page-header {
-        padding: 16px 4px;
-      }
-
-      .header-pc-layout {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-      }
-
-      .header-text {
-        display: contents;
-      }
-
-      .header-text h1 {
-        order: 1;
-        flex: 0 0 100%;
-        width: 100%;
-        margin: 0;
-        padding: 0;
-        font-size: clamp(
-          18px,
-          6.5vw,
-          35px
-        );
-        line-height: 1.2;
-        letter-spacing: -0.08em;
-        white-space: nowrap;
-        word-break: keep-all;
-        overflow-wrap: normal;
-        text-align: center;
-      }
-
-      .header-character {
-        order: 2;
-        grid-column: auto;
-        flex: 0 0 44px;
-        width: 44px;
-        height: 44px;
-        margin: 9px 6px 0 0;
-      }
-
-      .header-text p {
-        order: 3;
-        flex: 0 0 auto;
-        width: auto;
-        margin: 9px 0 0;
-        padding: 0;
-        font-size: clamp(
-          13px,
-          4vw,
-          17px
-        );
-        line-height: 1.3;
-        letter-spacing: -0.02em;
-        white-space: nowrap;
-        word-break: keep-all;
-        overflow-wrap: normal;
-        text-align: center;
-      }
-
       main {
         padding: 10px;
+      }
+
+      .page-header {
+        padding: 14px 6px;
+      }
+
+      /* スマホ表示に切り替え */
+      .pc-only {
+        display: none !important;
+      }
+
+      .sp-only {
+        display: block !important;
+      }
+
+      .header-sp-layout h1 {
+        margin: 0 0 6px 0;
+        font-size: clamp(17px, 5.8vw, 25px);
+        font-weight: bold;
+        line-height: 1.25;
+        letter-spacing: -0.05em;
+        white-space: nowrap;
+      }
+
+      .header-sp-sub {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .header-character-sp {
+        width: 38px;
+        height: 38px;
+        object-fit: contain;
+      }
+
+      .header-sp-sub p {
+        margin: 0;
+        font-size: clamp(13px, 4vw, 16px);
+        white-space: nowrap;
       }
 
       #map {
@@ -621,23 +604,6 @@
     }
 
     @media (max-width: 360px) {
-      .header-text h1 {
-        font-size: 5.4vw;
-        letter-spacing: -0.1em;
-      }
-
-      .header-character {
-        flex-basis: 38px;
-        width: 38px;
-        height: 38px;
-        margin-right: 4px;
-      }
-
-      .header-text p {
-        font-size: 3.8vw;
-        letter-spacing: -0.03em;
-      }
-
       .team-grid {
         grid-template-columns: 1fr;
       }
@@ -647,15 +613,28 @@
 
 <body>
   <header class="page-header">
-    <div class="header-pc-layout">
+    <!-- PC用ヘッダー -->
+    <div class="header-pc-layout pc-only">
       <img
         class="header-character"
         src="./さつま町キャラクター_透明.png"
         alt="さつま町キャラクター"
       >
-
       <div class="header-text">
         <h1>第22回さつま町駅伝競走大会</h1>
+        <p>チーム位置情報・運行状況</p>
+      </div>
+    </div>
+
+    <!-- スマホ用ヘッダー -->
+    <div class="header-sp-layout sp-only">
+      <h1>第22回さつま町駅伝競走大会</h1>
+      <div class="header-sp-sub">
+        <img
+          class="header-character-sp"
+          src="./さつま町キャラクター_透明.png"
+          alt="さつま町キャラクター"
+        >
         <p>チーム位置情報・運行状況</p>
       </div>
     </div>
@@ -725,56 +704,56 @@
         id: "a-yachi-funaki",
         name: "宮之城屋地船木",
         className: "A",
-        colorName: "紫",
+        colorName: "紫色",
         colorCode: "#7B1FA2"
       },
       {
         id: "a-tsuruda",
         name: "鶴田A",
         className: "A",
-        colorName: "青",
+        colorName: "青色",
         colorCode: "#1565C0"
       },
       {
         id: "a-hotaru",
         name: "宮之城ほたるA",
         className: "A",
-        colorName: "白",
+        colorName: "白色",
         colorCode: "#FFFFFF"
       },
       {
         id: "a-hokubu",
         name: "宮之城北部",
         className: "A",
-        colorName: "赤",
+        colorName: "赤色",
         colorCode: "#D32F2F"
       },
       {
         id: "b-yamasaki",
         name: "宮之城山崎",
         className: "B",
-        colorName: "桃",
+        colorName: "桃色",
         colorCode: "#EC407A"
       },
       {
         id: "b-satsuma",
         name: "薩摩",
         className: "B",
-        colorName: "黄",
+        colorName: "黄色",
         colorCode: "#F9A825"
       },
       {
         id: "b-tsuruda",
         name: "鶴田B",
         className: "B",
-        colorName: "緑",
+        colorName: "緑色",
         colorCode: "#2E7D32"
       },
       {
         id: "b-hotaru",
         name: "宮之城ほたるB",
         className: "B",
-        colorName: "茶",
+        colorName: "茶色",
         colorCode: "#795548"
       }
     ];
@@ -935,8 +914,7 @@
         return "-";
       }
 
-      const time =
-        new Date(value).getTime();
+      const time = new Date(value).getTime();
 
       if (!Number.isFinite(time)) {
         return "-";
@@ -972,9 +950,7 @@
       return days + "日前";
     }
 
-    function getManagementStatusText(
-      status
-    ) {
+    function getManagementStatusText(status) {
       switch (status) {
         case "waiting":
           return "開始前";
@@ -990,9 +966,7 @@
       }
     }
 
-    function getManagementStatusClass(
-      status
-    ) {
+    function getManagementStatusClass(status) {
       switch (status) {
         case "waiting":
           return "status-waiting";
@@ -1026,9 +1000,7 @@
       );
     }
 
-    function createCheckpointIcon(
-      checkpoint
-    ) {
+    function createCheckpointIcon(checkpoint) {
       const side =
         checkpoint.labelSide === "left"
           ? "left"
@@ -1530,9 +1502,7 @@
         );
     }
 
-    function renderAllTeams(
-      combinedState
-    ) {
+    function renderAllTeams(combinedState) {
       combinedState.forEach(
         function (state) {
           updateTeamCard(state);
@@ -1667,9 +1637,7 @@
           "<strong>更新完了:</strong> " +
           escapeHtml(
             lastSuccessfulRefreshAt
-              .toLocaleString(
-                "ja-JP"
-              )
+              .toLocaleString("ja-JP")
           ) +
           "<br>位置確認済み: " +
           locationCount +
