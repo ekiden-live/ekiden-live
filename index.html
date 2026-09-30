@@ -59,45 +59,48 @@
       border-bottom: 5px solid #f2c94c;
     }
 
-    .page-header h1 {
+    /*
+     * PCでは左右に同じ幅の領域を確保します。
+     * キャラクターが左側にあっても、
+     * 文字部分はページ中央に配置されます。
+     */
+    .header-pc-layout {
+      display: grid;
+      grid-template-columns:
+        120px minmax(0, 1fr) 120px;
+      align-items: center;
+      width: min(1100px, 100%);
+      margin: 0 auto;
+    }
+
+    .header-character {
+      grid-column: 1;
+      justify-self: center;
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+    }
+
+    .header-text {
+      grid-column: 2;
+      min-width: 0;
+      text-align: center;
+    }
+
+    .header-text h1 {
       margin: 0;
-      font-size: clamp(1.7rem, 5vw, 3rem);
+      font-size: clamp(1.7rem, 4vw, 3rem);
       line-height: 1.35;
       letter-spacing: 0.04em;
+      text-align: center;
     }
 
-    .page-header p {
+    .header-text p {
       margin: 8px 0 0;
       font-size: clamp(0.95rem, 2vw, 1.15rem);
+      text-align: center;
       opacity: 0.95;
     }
-
-    .header-pc-layout {
-  display: grid;
-  grid-template-columns: 120px minmax(0, 1fr) 120px;
-  align-items: center;
-  width: min(1100px, 100%);
-  margin: 0 auto;
-}
-
-.header-character {
-  grid-column: 1;
-  justify-self: center;
-  width: 100px;
-  height: 100px;
-  object-fit: contain;
-}
-
-.header-text {
-  grid-column: 2;
-  min-width: 0;
-  text-align: center;
-}
-
-.header-text h1,
-.header-text p {
-  text-align: center;
-}
 
     main {
       width: min(1400px, 100%);
@@ -321,7 +324,7 @@
 
     /*
      * 固定地点マーカー
-     * 丸印を38px領域に固定し、地点名だけを左右へ表示します。
+     * 丸印を登録された緯度・経度に固定します。
      */
     .checkpoint-map-icon {
       overflow: visible !important;
@@ -374,11 +377,13 @@
         0 2px 6px rgba(0, 0, 0, 0.3);
     }
 
-    .checkpoint-label-left .checkpoint-marker-label {
+    .checkpoint-label-left
+      .checkpoint-marker-label {
       right: 45px;
     }
 
-    .checkpoint-label-right .checkpoint-marker-label {
+    .checkpoint-label-right
+      .checkpoint-marker-label {
       left: 45px;
     }
 
@@ -390,8 +395,7 @@
     }
 
     /*
-     * Leaflet CSSの読み込みに失敗した場合にも、
-     * 地図タイルの分割表示を防ぐための補助設定です。
+     * Leaflet CSS読み込み失敗時の補助設定
      */
     .leaflet-pane,
     .leaflet-tile,
@@ -499,50 +503,77 @@
     }
 
     @media (max-width: 600px) {
+      /*
+       * スマホでは大会名を1段目、
+       * キャラクターとサブタイトルを2段目にします。
+       */
+      .page-header {
+        padding: 16px 3px;
+      }
+
+      .header-pc-layout {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .header-text {
+        display: contents;
+      }
+
+      .header-text h1 {
+        order: 1;
+        flex: 0 0 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        font-size: clamp(
+          18px,
+          5.8vw,
+          28px
+        );
+        line-height: 1.2;
+        letter-spacing: -0.08em;
+        white-space: nowrap;
+        word-break: keep-all;
+        overflow-wrap: normal;
+        text-align: center;
+      }
+
+      .header-character {
+        order: 2;
+        grid-column: auto;
+        flex: 0 0 44px;
+        width: 44px;
+        height: 44px;
+        margin: 9px 6px 0 0;
+      }
+
+      .header-text p {
+        order: 3;
+        flex: 0 0 auto;
+        width: auto;
+        margin: 9px 0 0;
+        padding: 0;
+        font-size: clamp(
+          13px,
+          4vw,
+          17px
+        );
+        line-height: 1.3;
+        letter-spacing: -0.02em;
+        white-space: nowrap;
+        word-break: keep-all;
+        overflow-wrap: normal;
+        text-align: center;
+      }
+
       main {
         padding: 10px;
       }
-
-      .page-header {
-        padding: 19px 10px;
-      }
-      
-      .header-content h1 {
-  width: 100%;
-  font-size: clamp(14px, 5.2vw, 24px);
-  line-height: 1.3;
-  letter-spacing: -0.04em;
-  white-space: nowrap;
-}
-
-.header-sub-row {
-  gap: 6px;
-  margin-top: 8px;
-}
-
-.header-character {
-  width: 46px;
-  height: 46px;
-}
-
-.header-sub-row p {
-  font-size: clamp(13px, 4vw, 17px);
-  white-space: nowrap;
-}
-      
-      .header-title-row {
-  gap: 8px;
-}
-
-.header-character {
-  width: 65px;
-  height: 65px;
-}
-
-.header-title-text h1 {
-  font-size: clamp(1.25rem, 6vw, 1.8rem);
-}
-
 
       #map {
         height: 50vh;
@@ -590,6 +621,23 @@
     }
 
     @media (max-width: 360px) {
+      .header-text h1 {
+        font-size: 5.4vw;
+        letter-spacing: -0.1em;
+      }
+
+      .header-character {
+        flex-basis: 38px;
+        width: 38px;
+        height: 38px;
+        margin-right: 4px;
+      }
+
+      .header-text p {
+        font-size: 3.8vw;
+        letter-spacing: -0.03em;
+      }
+
       .team-grid {
         grid-template-columns: 1fr;
       }
@@ -599,21 +647,19 @@
 
 <body>
   <header class="page-header">
-  <div class="header-pc-layout">
-    <img
-      class="header-character"
-      src="./さつま町キャラクター_透明.png"
-      alt="さつま町キャラクター"
-    >
+    <div class="header-pc-layout">
+      <img
+        class="header-character"
+        src="./さつま町キャラクター_透明.png"
+        alt="さつま町キャラクター"
+      >
 
-    <div class="header-text">
-      <h1>第22回さつま町駅伝競走大会</h1>
-      <p>チーム位置情報・運行状況</p>
+      <div class="header-text">
+        <h1>第22回さつま町駅伝競走大会</h1>
+        <p>チーム位置情報・運行状況</p>
+      </div>
     </div>
-  </div>
-</header>
-
-
+  </header>
 
   <main>
     <section
@@ -889,7 +935,8 @@
         return "-";
       }
 
-      const time = new Date(value).getTime();
+      const time =
+        new Date(value).getTime();
 
       if (!Number.isFinite(time)) {
         return "-";
@@ -925,7 +972,9 @@
       return days + "日前";
     }
 
-    function getManagementStatusText(status) {
+    function getManagementStatusText(
+      status
+    ) {
       switch (status) {
         case "waiting":
           return "開始前";
@@ -941,7 +990,9 @@
       }
     }
 
-    function getManagementStatusClass(status) {
+    function getManagementStatusClass(
+      status
+    ) {
       switch (status) {
         case "waiting":
           return "status-waiting";
@@ -975,7 +1026,9 @@
       );
     }
 
-    function createCheckpointIcon(checkpoint) {
+    function createCheckpointIcon(
+      checkpoint
+    ) {
       const side =
         checkpoint.labelSide === "left"
           ? "left"
@@ -1477,7 +1530,9 @@
         );
     }
 
-    function renderAllTeams(combinedState) {
+    function renderAllTeams(
+      combinedState
+    ) {
       combinedState.forEach(
         function (state) {
           updateTeamCard(state);
@@ -1612,7 +1667,9 @@
           "<strong>更新完了:</strong> " +
           escapeHtml(
             lastSuccessfulRefreshAt
-              .toLocaleString("ja-JP")
+              .toLocaleString(
+                "ja-JP"
+              )
           ) +
           "<br>位置確認済み: " +
           locationCount +
