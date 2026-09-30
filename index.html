@@ -59,7 +59,6 @@
       border-bottom: 5px solid #f2c94c;
     }
 
-    /* ヘルパー：スマホとPCの表示切り替え用 */
     .pc-only {
       display: block;
     }
@@ -102,7 +101,6 @@
       opacity: 0.95;
     }
 
-    /* スマホ用ヘッダーコンテナ（初期は非表示） */
     .header-sp-layout {
       display: none;
       width: 100%;
@@ -215,6 +213,13 @@
       background: #fff;
       border: 1px solid var(--border);
       border-radius: 9px;
+      cursor: pointer;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .team-card:hover {
+      background-color: #f8fafc;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
     }
 
     .team-card::before {
@@ -329,11 +334,7 @@
       line-height: 1.7;
     }
 
-    /*
-     * 固定地点マーカー
-     * スマホ等で地図を動かしたときに消えないよう、
-     * Leafletのクリッピング判定範囲を拡大する対策を施しています。
-     */
+    /* 固定地点マーカー */
     .leaflet-marker-pane .checkpoint-map-icon {
       overflow: visible !important;
     }
@@ -403,10 +404,6 @@
       text-align: center;
     }
 
-    /*
-     * Leaflet CSSの読み込みに失敗した場合にも、
-     * 地図タイルの分割表示を防ぐための補助設定です。
-     */
     .leaflet-pane,
     .leaflet-tile,
     .leaflet-marker-icon,
@@ -521,7 +518,6 @@
         padding: 14px 6px;
       }
 
-      /* スマホ表示に切り替え */
       .pc-only {
         display: none !important;
       }
@@ -613,7 +609,6 @@
 
 <body>
   <header class="page-header">
-    <!-- PC用ヘッダー -->
     <div class="header-pc-layout pc-only">
       <img
         class="header-character"
@@ -626,7 +621,6 @@
       </div>
     </div>
 
-    <!-- スマホ用ヘッダー -->
     <div class="header-sp-layout sp-only">
       <h1>第22回さつま町駅伝競走大会</h1>
       <div class="header-sp-sub">
@@ -1086,6 +1080,18 @@
               "確認中" +
             "</span>" +
           "</div>";
+
+        // チームカードをクリックしたときの処理
+        card.addEventListener("click", function () {
+          const marker = markers.get(team.id);
+          if (marker) {
+            const latLng = marker.getLatLng();
+            map.setView(latLng, 15, {
+              animate: true
+            });
+            marker.openPopup();
+          }
+        });
 
         const target =
           team.className === "A"
