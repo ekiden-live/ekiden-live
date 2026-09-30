@@ -499,50 +499,50 @@
     }
 
     @media (max-width: 600px) {
-      main {
-        padding: 10px;
-      }
+  main {
+    padding: 10px;
+  }
 
-      .page-header {
-        padding: 16px 4px;
-      }
-      
-      .header-content h1 {
-  width: 100%;
-  font-size: clamp(18px, 6.3vw, 30px);
-  line-height: 1.2;
-  letter-spacing: -0.08em;
-  white-space: nowrap;
+  .page-header {
+    padding: 16px 4px;
+  }
+
+  .header-content h1 {
+    width: 100%;
+    font-size: clamp(18px, 6.3vw, 30px);
+    line-height: 1.2;
+    letter-spacing: -0.08em;
+    white-space: nowrap;
+  }
+
+  .header-sub-row {
+    gap: 6px;
+    margin-top: 8px;
+  }
+
+  .header-character {
+    width: 46px;
+    height: 46px;
+  }
+
+  .header-sub-row p {
+    margin: 0;
+    font-size: clamp(13px, 4vw, 17px);
+    white-space: nowrap;
+    text-align: center;
+  }
 }
 
-.header-sub-row {
-  gap: 6px;
-  margin-top: 8px;
-}
+@media (max-width: 360px) {
+  .header-content h1 {
+    font-size: 5.9vw;
+    letter-spacing: -0.1em;
+  }
 
-.header-character {
-  width: 46px;
-  height: 46px;
+  .team-grid {
+    grid-template-columns: 1fr;
+  }
 }
-
-.header-sub-row p {
-  font-size: clamp(13px, 4vw, 17px);
-  white-space: nowrap;
-}
-      
-      .header-title-row {
-  gap: 8px;
-}
-
-.header-character {
-  width: 65px;
-  height: 65px;
-}
-
-.header-title-text h1 {
-  font-size: clamp(1.25rem, 6vw, 1.8rem);
-}
-
 
       #map {
         height: 50vh;
