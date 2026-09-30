@@ -72,36 +72,30 @@
       opacity: 0.95;
     }
 
-    .header-content {
-  position: relative;
+    .header-pc-layout {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 120px;
+  align-items: center;
   width: min(1100px, 100%);
   margin: 0 auto;
-  text-align: center;
-}
-
-.header-content h1 {
-  position: relative;
-  z-index: 1;
-  margin: 0;
-  text-align: center;
-}
-
-.header-sub-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 8px;
 }
 
 .header-character {
-  width: 72px;
-  height: 72px;
+  grid-column: 1;
+  justify-self: center;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
 }
 
-.header-sub-row p {
-  margin: 0;
+.header-text {
+  grid-column: 2;
+  min-width: 0;
+  text-align: center;
+}
+
+.header-text h1,
+.header-text p {
   text-align: center;
 }
 
@@ -605,20 +599,20 @@
 
 <body>
   <header class="page-header">
-  <div class="header-content">
-  <h1>第22回さつま町駅伝競走大会</h1>
-
-  <div class="header-sub-row"> 
+  <div class="header-pc-layout">
     <img
       class="header-character"
-      src="./さつま町キャラクター_透明.png"
+      src="./satsuma-character.png"
       alt="さつま町キャラクター"
     >
 
+    <div class="header-text">
+      <h1>第22回さつま町駅伝競走大会</h1>
       <p>チーム位置情報・運行状況</p>
     </div>
   </div>
 </header>
+
 
 
   <main>
