@@ -293,14 +293,20 @@
       align-items: center;
     }
 
-    .marker-dot {
+    /* SVGの走者アイコンの設定 */
+    .marker-runner {
       flex: 0 0 auto;
-      width: 25px;
-      height: 25px;
-      border: 3px solid #222;
-      border-radius: 50%;
-      box-shadow:
-        0 1px 4px rgba(0, 0, 0, 0.5);
+      width: 32px;
+      height: 32px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+    
+    /* 白色チームでも視認できるように、SVGのふちに黒の枠線をつける */
+    .marker-runner path {
+      stroke: #222;
+      stroke-width: 25px;
+      stroke-linejoin: round;
+      paint-order: stroke fill;
     }
 
     .marker-label {
@@ -321,9 +327,9 @@
         0 1px 3px rgba(0, 0, 0, 0.25);
     }
 
-    .marker-finished .marker-dot {
-      border-width: 5px;
-      border-style: double;
+    /* ゴール済みチームはアイコンを少し半透明にする */
+    .marker-finished .marker-runner {
+      opacity: 0.6;
     }
 
     .marker-stale {
@@ -334,77 +340,77 @@
       line-height: 1.7;
     }
 
- /* 固定地点マーカー
-   ズーム・移動時も常に表示するため専用レイヤーを使用 */
-.checkpoint-map-icon {
-  background: transparent !important;
-  border: 0 !important;
-  overflow: visible !important;
-  pointer-events: none !important;
-  display: block !important;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
+    /* 固定地点マーカー
+       ズーム・移動時も常に表示するため専用レイヤーを使用 */
+    .checkpoint-map-icon {
+      background: transparent !important;
+      border: 0 !important;
+      overflow: visible !important;
+      pointer-events: none !important;
+      display: block !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
 
-.checkpoint-marker {
-  position: relative;
-  width: 38px;
-  height: 38px;
-  display: block;
-  overflow: visible;
-  visibility: visible !important;
-  opacity: 1 !important;
-}
+    .checkpoint-marker {
+      position: relative;
+      width: 38px;
+      height: 38px;
+      display: block;
+      overflow: visible;
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
 
-.checkpoint-marker-symbol {
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  color: #fff;
-  font-size: 0.82rem;
-  font-weight: bold;
-  line-height: 1;
-  border: 3px solid #fff;
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 2px #17212b,
-    0 2px 6px rgba(0, 0, 0, 0.45);
-  visibility: visible !important;
-  opacity: 1 !important;
-}
+    .checkpoint-marker-symbol {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      color: #fff;
+      font-size: 0.82rem;
+      font-weight: bold;
+      line-height: 1;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 2px #17212b,
+        0 2px 6px rgba(0, 0, 0, 0.45);
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
 
-.checkpoint-marker-label {
-  position: absolute;
-  top: 0;
-  display: block;
-  width: max-content;
-  max-width: none;
-  padding: 6px 9px;
-  color: #111;
-  font-size: 16px;
-  font-weight: bold;
-  line-height: 1.55;
-  white-space: nowrap;
-  background: rgba(255, 255, 255, 0.97);
-  border: 2px solid #17212b;
-  border-radius: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  visibility: visible !important;
-  opacity: 1 !important;
-}
+    .checkpoint-marker-label {
+      position: absolute;
+      top: 0;
+      display: block;
+      width: max-content;
+      max-width: none;
+      padding: 6px 9px;
+      color: #111;
+      font-size: 16px;
+      font-weight: bold;
+      line-height: 1.55;
+      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.97);
+      border: 2px solid #17212b;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      visibility: visible !important;
+      opacity: 1 !important;
+    }
 
-.checkpoint-label-left .checkpoint-marker-label {
-  right: 45px;
-}
+    .checkpoint-label-left .checkpoint-marker-label {
+      right: 45px;
+    }
 
-.checkpoint-label-right .checkpoint-marker-label {
-  left: 45px;
-}
+    .checkpoint-label-right .checkpoint-marker-label {
+      left: 45px;
+    }
 
     footer {
       padding: 22px 16px 30px;
@@ -599,10 +605,10 @@
       }
     }
     @media (min-width: 601px) {
-  .page-header .header-text h1 {
-    font-size: 48px !important;
-  }
-}
+      .page-header .header-text h1 {
+        font-size: 48px !important;
+      }
+    }
   </style>
 </head>
 
@@ -855,28 +861,23 @@
       );
 
     const map = L.map("map", {
-  zoomControl: true,
-  zoomAnimation: true,
-  fadeAnimation: false,
-  markerZoomAnimation: true
-}).setView(
-  DEFAULT_MAP_CENTER,
-  DEFAULT_MAP_ZOOM
-);
+      zoomControl: true,
+      zoomAnimation: true,
+      fadeAnimation: false,
+      markerZoomAnimation: true
+    }).setView(
+      DEFAULT_MAP_CENTER,
+      DEFAULT_MAP_ZOOM
+    );
 
-/*
- * 固定地点専用のPaneを作成
- *
- * Leaflet標準のmarkerPaneより前面に配置することで、
- * ズーム・移動・チーム位置マーカーの更新があっても
- * スタート・中継所・ゴールを常に表示する。
- */
-const checkpointPane = map.createPane("checkpointPane");
-
-checkpointPane.style.zIndex = "650";
-checkpointPane.style.pointerEvents = "none";
-checkpointPane.style.visibility = "visible";
-checkpointPane.style.opacity = "1";
+    /*
+     * 固定地点専用のPaneを作成
+     */
+    const checkpointPane = map.createPane("checkpointPane");
+    checkpointPane.style.zIndex = "650";
+    checkpointPane.style.pointerEvents = "none";
+    checkpointPane.style.visibility = "visible";
+    checkpointPane.style.opacity = "1";
 
     L.tileLayer(
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -1040,38 +1041,26 @@ checkpointPane.style.opacity = "1";
     }
 
     function createCheckpointMarkers() {
-  CHECKPOINTS.forEach(function (checkpoint) {
-    const position = [
-      checkpoint.latitude,
-      checkpoint.longitude
-    ];
+      CHECKPOINTS.forEach(function (checkpoint) {
+        const position = [
+          checkpoint.latitude,
+          checkpoint.longitude
+        ];
 
-    const marker = L.marker(position, {
-      icon: createCheckpointIcon(checkpoint),
+        const marker = L.marker(position, {
+          icon: createCheckpointIcon(checkpoint),
+          pane: "checkpointPane",
+          zIndexOffset: 10000,
+          interactive: false,
+          keyboard: false,
+          riseOnHover: false,
+          opacity: 1
+        });
 
-      // ★ 専用Paneに入れる
-      pane: "checkpointPane",
-
-      // ★ 通常のチームマーカーより十分前面
-      zIndexOffset: 10000,
-
-      // ★ 固定地点なのでクリック等は不要
-      interactive: false,
-      keyboard: false,
-      riseOnHover: false,
-
-      // ★ 常に表示
-      opacity: 1
-    });
-
-    marker.addTo(map);
-
-    /*
-     * マーカー生成直後に前面へ
-     */
-    marker.setZIndexOffset(10000);
-  });
-}
+        marker.addTo(map);
+        marker.setZIndexOffset(10000);
+      });
+    }
 
     function createTeamCards() {
       TEAMS.forEach(function (team) {
@@ -1272,6 +1261,7 @@ checkpointPane.style.opacity = "1";
       return combined;
     }
 
+    // ========== SVG 走者アイコンを組み立てる関数 ==========
     function createMarkerIcon(state) {
       const team = state.team;
 
@@ -1295,14 +1285,19 @@ checkpointPane.style.opacity = "1";
         );
       }
 
+      // Font Awesome の走者アイコンを各チームカラーで生成
+      const svgIcon =
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="marker-runner" style="color:' +
+          escapeHtml(team.colorCode) +
+        '">' +
+          '<path fill="currentColor" d="M352.5 32C383.4 32 408.5 57.1 408.5 88C408.5 118.9 383.4 144 352.5 144C321.6 144 296.5 118.9 296.5 88C296.5 57.1 321.6 32 352.5 32zM219.6 240C216.3 240 213.4 242 212.2 245L190.2 299.9C183.6 316.3 165 324.3 148.6 317.7C132.2 311.1 124.2 292.5 130.8 276.1L152.7 221.2C163.7 193.9 190.1 176 219.6 176L316.9 176C345.4 176 371.7 191.1 386 215.7L418.8 272L480.4 272C498.1 272 512.4 304C512.4 321.7 498.1 336 480.4 336L418.8 336C396 336 375 323.9 363.5 304.2L353.5 287.1L332.8 357.5L408.2 380.1C435.9 388.4 450 419.1 438.3 445.6L381.7 573C374.5 589.2 355.6 596.4 339.5 589.2C323.4 582 316.1 563.1 323.3 547L372.5 436.2L276.6 407.4C243.9 397.6 224.6 363.7 232.9 330.6L255.6 240L219.7 240zM211.6 421C224.9 435.9 242.3 447.3 262.8 453.4L267.5 454.8L260.6 474.1C254.8 490.4 244.6 504.9 231.3 515.9L148.9 583.8C135.3 595 115.1 593.1 103.9 579.5C92.7 565.9 94.6 545.7 108.2 534.5L190.6 466.6C195.1 462.9 198.4 458.1 200.4 452.7L211.6 421z"/>' +
+        '</svg>';
+
       const html =
         '<div class="' +
           wrapperClasses.join(" ") +
         '">' +
-          '<span class="marker-dot" style="' +
-            "background:" +
-            escapeHtml(team.colorCode) +
-          '"></span>' +
+          svgIcon +
           '<span class="marker-label">' +
             escapeHtml(team.name) +
           "</span>" +
@@ -1312,7 +1307,7 @@ checkpointPane.style.opacity = "1";
         className: "map-team-icon",
         html: html,
         iconSize: [165, 52],
-        iconAnchor: [13, 16],
+        iconAnchor: [16, 16],
         popupAnchor: [0, -17]
       });
     }
@@ -1761,39 +1756,32 @@ checkpointPane.style.opacity = "1";
       }
     );
       
-      /*
- * ズーム・移動後に固定地点マーカーを再描画
- *
- * スマートフォンではピンチズーム時にLeafletの
- * DOM再配置が発生するため、ズーム終了後に
- * 固定地点Paneを強制的に前面へ戻す。
- */
-function refreshCheckpointLayer() {
-  const pane = map.getPane("checkpointPane");
+    /*
+     * ズーム・移動後に固定地点マーカーを再描画
+     */
+    function refreshCheckpointLayer() {
+      const pane = map.getPane("checkpointPane");
 
-  if (!pane) {
-    return;
-  }
+      if (!pane) {
+        return;
+      }
 
-  pane.style.zIndex = "650";
-  pane.style.visibility = "visible";
-  pane.style.opacity = "1";
-}
+      pane.style.zIndex = "650";
+      pane.style.visibility = "visible";
+      pane.style.opacity = "1";
+    }
 
-/* ズーム終了時 */
-map.on("zoomend", function () {
-  refreshCheckpointLayer();
-});
+    map.on("zoomend", function () {
+      refreshCheckpointLayer();
+    });
 
-/* 地図移動終了時 */
-map.on("moveend", function () {
-  refreshCheckpointLayer();
-});
+    map.on("moveend", function () {
+      refreshCheckpointLayer();
+    });
 
-/* 地図サイズ変更後 */
-map.on("resize", function () {
-  refreshCheckpointLayer();
-});
+    map.on("resize", function () {
+      refreshCheckpointLayer();
+    });
 
     window.addEventListener(
       "orientationchange",
