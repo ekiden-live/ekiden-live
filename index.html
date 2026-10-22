@@ -286,14 +286,12 @@
     .map-team-icon {
       background: transparent;
       border: 0;
-      /* Leafletのコンテナ側ではみ出ないように設定 */
       overflow: visible !important; 
     }
 
     .marker-wrapper {
       display: flex;
       align-items: center;
-      height: 100%;
     }
 
     /* SVGの走者アイコンの設定 */
@@ -307,7 +305,7 @@
     
     .marker-runner path {
       stroke: #222;
-      stroke-width: 20px;
+      stroke-width: 18px;
       stroke-linejoin: round;
       paint-order: stroke fill;
     }
@@ -871,9 +869,6 @@
       DEFAULT_MAP_ZOOM
     );
 
-    /*
-     * 固定地点専用のPaneを作成
-     */
     const checkpointPane = map.createPane("checkpointPane");
     checkpointPane.style.zIndex = "650";
     checkpointPane.style.pointerEvents = "none";
@@ -1286,7 +1281,6 @@
         );
       }
 
-      // ★追加修正：枠線(stroke)がはみ出しても切れないように viewBox の枠を広げました（-64 -64 768 768）
       const svgIcon =
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="-64 -64 768 768" class="marker-runner" style="color:' +
           escapeHtml(team.colorCode) +
@@ -1304,13 +1298,13 @@
           "</span>" +
         "</div>";
 
-      // 枠全体も少し大きめ（高さ60）にして、下部が切れないように設定
+      // ★追加修正：iconSizeをnullに設定し、内容が枠で切り落とされないようにしました
       return L.divIcon({
         className: "map-team-icon",
         html: html,
-        iconSize: [180, 60], 
-        iconAnchor: [22, 30],
-        popupAnchor: [0, -30]
+        iconSize: null, 
+        iconAnchor: [22, 22],
+        popupAnchor: [0, -22]
       });
     }
 
@@ -1375,7 +1369,6 @@
       const team = state.team;
       const location = state.location;
 
-      // ★ステータスが「開始前(waiting)」の場合は地図に表示しない
       const shouldHide = (state.status === "waiting") || !location;
 
       if (shouldHide) {
@@ -1558,7 +1551,6 @@
 
       latestStateByTeam.forEach(
         function (state) {
-          // ★「開始前(waiting)」のチームは自動ズームの範囲に含めない
           if (state.status === "waiting") {
             return;
           }
@@ -1663,7 +1655,6 @@
         lastSuccessfulRefreshAt =
           new Date();
 
-        // 競技中またはゴール済みで、かつ位置情報があるチームの数をカウント
         const locationCount =
           Array.from(
             latestStateByTeam.values()
@@ -1765,9 +1756,6 @@
       }
     );
       
-    /*
-     * ズーム・移動後に固定地点マーカーを再描画
-     */
     function refreshCheckpointLayer() {
       const pane = map.getPane("checkpointPane");
 
