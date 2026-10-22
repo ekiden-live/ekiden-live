@@ -69,7 +69,8 @@
 
     .header-pc-layout {
       display: grid;
-      grid-template-columns: 120px minmax(0, 1fr) 120px;
+      grid-template-columns:
+        120px minmax(0, 1fr) 120px;
       align-items: center;
       width: min(1100px, 100%);
       margin: 0 auto;
@@ -97,7 +98,8 @@
 
     .header-text p {
       margin-top: 8px;
-      font-size: clamp(0.95rem, 2vw, 1.15rem);
+      font-size:
+        clamp(0.95rem, 2vw, 1.15rem);
       opacity: 0.95;
     }
 
@@ -195,7 +197,8 @@
       margin: 0 0 10px;
       padding-bottom: 6px;
       font-size: 1.25rem;
-      border-bottom: 3px solid var(--primary);
+      border-bottom:
+        3px solid var(--primary);
     }
 
     .team-grid {
@@ -208,7 +211,8 @@
     .team-card {
       position: relative;
       min-width: 0;
-      padding: 12px 10px 12px 16px;
+      padding:
+        12px 10px 12px 16px;
       overflow: hidden;
       background: #fff;
       border: 1px solid var(--border);
@@ -222,7 +226,8 @@
     .team-card:hover {
       background-color: #f8fafc;
       box-shadow:
-        0 3px 10px rgba(0, 0, 0, 0.08);
+        0 3px 10px
+        rgba(0, 0, 0, 0.08);
     }
 
     .team-card::before {
@@ -232,7 +237,8 @@
       left: 0;
       width: 7px;
       content: "";
-      background: var(--team-color, #777);
+      background:
+        var(--team-color, #777);
       border-right:
         var(--team-color-border, 0);
     }
@@ -288,13 +294,14 @@
 
     /*
      * チーム位置マーカー
-     * SVGの輪郭や影が切れないよう、
-     * Leaflet側の表示枠を明示する。
+     *
+     * アイコン・影・ラベルがLeafletの
+     * アイコン領域からはみ出さないようにする。
      */
     .map-team-icon,
     .map-team-icon.leaflet-div-icon {
-      width: 220px !important;
-      height: 68px !important;
+      width: 240px !important;
+      height: 80px !important;
       margin: 0 !important;
       padding: 0 !important;
       overflow: visible !important;
@@ -306,7 +313,8 @@
       display: flex;
       align-items: center;
       width: max-content;
-      height: 68px;
+      min-width: 0;
+      height: 80px;
       margin: 0;
       padding: 0;
       overflow: visible;
@@ -314,38 +322,43 @@
 
     /*
      * SVG走者アイコン
-     * 元の44pxから54pxへ拡大する。
+     *
+     * 64pxへ拡大し、縮小を禁止する。
      */
     .marker-runner {
       display: block;
-      flex: 0 0 54px;
-      width: 54px;
-      height: 54px;
+      flex: 0 0 64px;
+      width: 64px;
+      height: 64px;
       margin: 0;
       padding: 0;
       overflow: visible;
       filter:
         drop-shadow(
-          0 2px 3px rgba(0, 0, 0, 0.5)
+          0 2px 3px
+          rgba(0, 0, 0, 0.5)
         );
     }
 
     /*
-     * 白色チームでも見えるように輪郭を付ける。
+     * 白色チームでも見えるよう、
+     * アイコンに濃色の輪郭を付ける。
      */
     .marker-runner path {
       stroke: #222;
-      stroke-width: 18px;
+      stroke-width: 14px;
       stroke-linecap: round;
       stroke-linejoin: round;
       paint-order: stroke fill;
     }
 
     .marker-label {
+      display: block;
+      flex: 0 0 auto;
       width: max-content;
-      max-width: 150px;
-      margin-left: 6px;
-      padding: 4px 8px;
+      max-width: 160px;
+      margin-left: 10px;
+      padding: 5px 9px;
       color: #111;
       font-size: 13px;
       font-weight: bold;
@@ -353,11 +366,12 @@
       white-space: normal;
       overflow-wrap: anywhere;
       background:
-        rgba(255, 255, 255, 0.94);
+        rgba(255, 255, 255, 0.96);
       border: 1px solid #333;
       border-radius: 5px;
       box-shadow:
-        0 1px 3px rgba(0, 0, 0, 0.25);
+        0 1px 3px
+        rgba(0, 0, 0, 0.25);
     }
 
     .marker-finished .marker-runner {
@@ -379,7 +393,8 @@
       visibility: visible !important;
       opacity: 1 !important;
       pointer-events: none !important;
-      background: transparent !important;
+      background:
+        transparent !important;
       border: 0 !important;
     }
 
@@ -410,7 +425,8 @@
       border-radius: 50%;
       box-shadow:
         0 0 0 2px #17212b,
-        0 2px 6px rgba(0, 0, 0, 0.45);
+        0 2px 6px
+        rgba(0, 0, 0, 0.45);
       visibility: visible !important;
       opacity: 1 !important;
     }
@@ -432,7 +448,8 @@
       border: 2px solid #17212b;
       border-radius: 6px;
       box-shadow:
-        0 2px 6px rgba(0, 0, 0, 0.3);
+        0 2px 6px
+        rgba(0, 0, 0, 0.3);
       visibility: visible !important;
       opacity: 1 !important;
     }
@@ -970,7 +987,8 @@
     const accuracyCircles =
       new Map();
 
-    const teamCards = new Map();
+    const teamCards =
+      new Map();
 
     let latestStateByTeam =
       new Map();
@@ -1451,8 +1469,10 @@
     }
 
     /*
-     * SVG走者アイコンを組み立てる。
-     * パス形状は元のコードから変更しない。
+     * SVG走者アイコンを作成する。
+     *
+     * SVGパスそのものは変更せず、
+     * viewBoxで十分な余白を確保する。
      */
     function createMarkerIcon(state) {
       const team =
@@ -1484,7 +1504,7 @@
 
       const svgIcon =
         '<svg xmlns="http://www.w3.org/2000/svg" ' +
-          'viewBox="-80 -80 760 760" ' +
+          'viewBox="70 -20 500 660" ' +
           'preserveAspectRatio="xMidYMid meet" ' +
           'class="marker-runner" ' +
           'aria-hidden="true" ' +
@@ -1494,7 +1514,7 @@
               team.colorCode
             ) +
           '">' +
-          '<path fill="currentColor" d="M352.5 32C383.4 32 408.5 57.1 408.5 88C408.5 118.9 383.4 144 352.5 144C321.6 144 296.5 118.9 296.5 88C296.5 57.1 321.6 32 352.5 32zM219.6 240C216.3 240 213.4 242 212.2 245L190.2 299.9C183.6 316.3 165 324.3 148.6 317.7C132.2 311.1 124.2 292.5 130.8 276.1L152.7 221.2C163.7 193.9 190.1 176 219.6 176L316.9 176C345.4 176 371.7 191.1 386 215.7L418.8 272L480.4 272C498.1 272 512.4 304 512.4 321.7 498.1 336 480.4 336L418.8 336C396 336 375 323.9 363.5 304.2L353.5 287.1L332.8 357.5L408.2 380.1C435.9 388.4 450 419.1 438.3 445.6L381.7 573C374.5 589.2 355.6 596.4 339.5 589.2C323.4 582 316.1 563.1 323.3 547L372.5 436.2L276.6 407.4C243.9 397.6 224.6 363.7 232.9 330.6L255.6 240L219.7 240zM211.6 421C224.9 435.9 242.3 447.3 262.8 453.4L267.5 454.8L260.6 474.1C254.8 490.4 244.6 504.9 231.3 515.9L148.9 583.8C135.3 595 115.1 593.1 103.9 579.5C92.7 565.9 94.6 545.7 108.2 534.5L190.6 466.6C195.1 462.9 198.4 458.1 200.4 452.7L211.6 421z"/>' +
+          '<path fill="currentColor" d="M352.5 32C383.4 32 408.5 57.1 408.5 88C408.5 118.9 383.4 144 352.5 144C321.6 144 296.5 118.9 296.5 88C296.5 57.1 321.6 32 352.5 32zM219.6 240C216.3 240 213.4 242 212.2 245L190.2 299.9C183.6 316.3 165 324.3 148.6 317.7C132.2 311.1 124.2 292.5 130.8 276.1L152.7 221.2C163.7 193.9 190.1 176 219.6 176L316.9 176C345.4 176 371.7 191.1 386 215.7L418.8 272L480.4 272C498.1 272 512.4 304 512.4 321.7C512.4 339.4 498.1 336 480.4 336L418.8 336C396 336 375 323.9 363.5 304.2L353.5 287.1L332.8 357.5L408.2 380.1C435.9 388.4 450 419.1 438.3 445.6L381.7 573C374.5 589.2 355.6 596.4 339.5 589.2C323.4 582 316.1 563.1 323.3 547L372.5 436.2L276.6 407.4C243.9 397.6 224.6 363.7 232.9 330.6L255.6 240L219.7 240zM211.6 421C224.9 435.9 242.3 447.3 262.8 453.4L267.5 454.8L260.6 474.1C254.8 490.4 244.6 504.9 231.3 515.9L148.9 583.8C135.3 595 115.1 593.1 103.9 579.5C92.7 565.9 94.6 545.7 108.2 534.5L190.6 466.6C195.1 462.9 198.4 458.1 200.4 452.7L211.6 421z"/>' +
         "</svg>";
 
       const html =
@@ -1513,9 +1533,14 @@
         className:
           "map-team-icon",
         html: html,
-        iconSize: [220, 68],
-        iconAnchor: [27, 34],
-        popupAnchor: [0, -36]
+        iconSize: [240, 80],
+
+        /*
+         * 走者の中心を位置座標へ合わせる。
+         */
+        iconAnchor: [32, 40],
+
+        popupAnchor: [0, -42]
       });
     }
 
@@ -1915,10 +1940,16 @@
           positions
         );
 
+      /*
+       * 走者アイコンと右側のチーム名が
+       * 地図枠で切れないよう余白を確保する。
+       */
       map.fitBounds(
         bounds,
         {
-          padding: [45, 45],
+          paddingTopLeft: [90, 80],
+          paddingBottomRight:
+            [250, 80],
           maxZoom: 16
         }
       );
