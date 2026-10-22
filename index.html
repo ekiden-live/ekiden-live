@@ -297,14 +297,12 @@
     /* SVGの走者アイコンの設定 */
     .marker-runner {
       flex: 0 0 auto;
-      /* 中継所の円(38px)と視覚的なボリュームを合わせるため、少し大きめの42pxに設定 */
       width: 42px;
       height: 42px;
       overflow: visible;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     }
     
-    /* 白色チームでも視認できるように、SVGのふちに黒の枠線をつける */
     .marker-runner path {
       stroke: #222;
       stroke-width: 18px;
@@ -330,7 +328,6 @@
         0 1px 3px rgba(0, 0, 0, 0.25);
     }
 
-    /* ゴール済みチームはアイコンを少し半透明にする */
     .marker-finished .marker-runner {
       opacity: 0.6;
     }
@@ -1287,7 +1284,6 @@
         );
       }
 
-      // Font Awesome の走者アイコンを各チームカラーで生成
       const svgIcon =
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" class="marker-runner" style="color:' +
           escapeHtml(team.colorCode) +
@@ -1305,12 +1301,11 @@
           "</span>" +
         "</div>";
 
-      // SVGアイコンのサイズ(42px)に合わせて地図上の配置・中心点(21px)を調整
       return L.divIcon({
         className: "map-team-icon",
         html: html,
         iconSize: [180, 52], 
-        iconAnchor: [21, 26], // xを中心(42/2)に合わせる
+        iconAnchor: [21, 26],
         popupAnchor: [0, -25]
       });
     }
@@ -1376,7 +1371,10 @@
       const team = state.team;
       const location = state.location;
 
-      if (!location) {
+      // ★追加：ステータスが「開始前(waiting)」の場合は位置データがあっても地図に表示しない
+      const shouldHide = (state.status === "waiting") || !location;
+
+      if (shouldHide) {
         const oldMarker =
           markers.get(team.id);
 
@@ -1556,6 +1554,11 @@
 
       latestStateByTeam.forEach(
         function (state) {
+          // ★追加：「開始前(waiting)」のチームは自動ズームの範囲に含めない
+          if (state.status === "waiting") {
+            return;
+          }
+
           const location =
             state.location;
 
@@ -1656,13 +1659,12 @@
         lastSuccessfulRefreshAt =
           new Date();
 
+        // 競技中またはゴール済みで、かつ位置情報があるチームの数をカウント
         const locationCount =
           Array.from(
             latestStateByTeam.values()
           ).filter(function (state) {
-            return Boolean(
-              state.location
-            );
+            return (state.status !== "waiting") && Boolean(state.location);
           }).length;
 
         overallStatusElement.innerHTML =
