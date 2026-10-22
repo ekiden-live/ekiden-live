@@ -295,13 +295,13 @@
     /*
      * チーム位置マーカー
      *
-     * アイコン・影・ラベルがLeafletの
-     * アイコン領域からはみ出さないようにする。
+     * 位置座標はマーカー枠の左下にある
+     * ポインター先端へ固定する。
      */
     .map-team-icon,
     .map-team-icon.leaflet-div-icon {
-      width: 240px !important;
-      height: 80px !important;
+      width: 220px !important;
+      height: 70px !important;
       margin: 0 !important;
       padding: 0 !important;
       overflow: visible !important;
@@ -310,26 +310,27 @@
     }
 
     .marker-wrapper {
+      position: relative;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       width: max-content;
       min-width: 0;
-      height: 80px;
+      height: 70px;
       margin: 0;
-      padding: 0;
+      padding: 0 0 10px 0;
       overflow: visible;
     }
 
     /*
-     * SVG走者アイコン
-     *
-     * 64pxへ拡大し、縮小を禁止する。
+     * 走者アイコンを54pxへ縮小。
      */
     .marker-runner {
+      position: relative;
+      z-index: 2;
       display: block;
-      flex: 0 0 64px;
-      width: 64px;
-      height: 64px;
+      flex: 0 0 54px;
+      width: 54px;
+      height: 54px;
       margin: 0;
       padding: 0;
       overflow: visible;
@@ -340,10 +341,6 @@
         );
     }
 
-    /*
-     * 白色チームでも見えるよう、
-     * アイコンに濃色の輪郭を付ける。
-     */
     .marker-runner path {
       stroke: #222;
       stroke-width: 14px;
@@ -352,15 +349,42 @@
       paint-order: stroke fill;
     }
 
+    /*
+     * 走者下部のポインター先端が
+     * 緯度経度の正確な地点を示す。
+     */
+    .marker-pointer {
+      position: absolute;
+      z-index: 1;
+      left: 22px;
+      bottom: 0;
+      width: 0;
+      height: 0;
+      border-top:
+        13px solid var(--marker-color, #333);
+      border-right:
+        5px solid transparent;
+      border-left:
+        5px solid transparent;
+      filter:
+        drop-shadow(
+          0 1px 1px
+          rgba(0, 0, 0, 0.5)
+        );
+    }
+
     .marker-label {
+      position: relative;
+      z-index: 3;
       display: block;
       flex: 0 0 auto;
       width: max-content;
-      max-width: 160px;
-      margin-left: 10px;
-      padding: 5px 9px;
+      max-width: 150px;
+      margin-top: 8px;
+      margin-left: 6px;
+      padding: 4px 8px;
       color: #111;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: bold;
       line-height: 1.35;
       white-space: normal;
@@ -1468,12 +1492,6 @@
       return combined;
     }
 
-    /*
-     * SVG走者アイコンを作成する。
-     *
-     * SVGパスそのものは変更せず、
-     * viewBoxで十分な余白を確保する。
-     */
     function createMarkerIcon(state) {
       const team =
         state.team;
@@ -1520,8 +1538,13 @@
       const html =
         '<div class="' +
           wrapperClasses.join(" ") +
+          '" style="--marker-color:' +
+          escapeHtml(
+            team.colorCode
+          ) +
         '">' +
           svgIcon +
+          '<span class="marker-pointer" aria-hidden="true"></span>' +
           '<span class="marker-label">' +
             escapeHtml(
               team.name
@@ -1529,18 +1552,20 @@
           "</span>" +
         "</div>";
 
+      /*
+       * ポインター先端は枠内の
+       * x=27px、y=70pxにある。
+       *
+       * この位置を緯度経度へ固定するため、
+       * iconAnchorも同じ値にする。
+       */
       return L.divIcon({
         className:
           "map-team-icon",
         html: html,
-        iconSize: [240, 80],
-
-        /*
-         * 走者の中心を位置座標へ合わせる。
-         */
-        iconAnchor: [32, 40],
-
-        popupAnchor: [0, -42]
+        iconSize: [220, 70],
+        iconAnchor: [27, 70],
+        popupAnchor: [0, -72]
       });
     }
 
@@ -1940,16 +1965,12 @@
           positions
         );
 
-      /*
-       * 走者アイコンと右側のチーム名が
-       * 地図枠で切れないよう余白を確保する。
-       */
       map.fitBounds(
         bounds,
         {
-          paddingTopLeft: [90, 80],
+          paddingTopLeft: [80, 80],
           paddingBottomRight:
-            [250, 80],
+            [220, 80],
           maxZoom: 16
         }
       );
