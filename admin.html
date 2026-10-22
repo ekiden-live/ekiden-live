@@ -1090,129 +1090,187 @@
       }
     }
 
-    async function updateAllTeams(
-      newStatus
-    ) {
-      const statusText =
-        getStatusText(newStatus);
+async function updateAllTeams(
+  newStatus
+) {
+  const statusText =
+    getStatusText(newStatus);
 
-      const confirmed =
-        window.confirm(
-          "全8チームを「" +
-            statusText +
-            "」に変更しますか？"
+  const isReset =
+    newStatus === "waiting";
+
+  const confirmed =
+    window.confirm(
+      isReset
+        ? "全8チームを開始前に戻し、保存されている全位置情報を削除しますか？"
+        : "全8チームを「" +
+          statusText +
+          "」に変更しますか？"
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  const secondConfirmed =
+    window.confirm(
+      isReset
+        ? "位置情報の履歴は元に戻せません。本当に削除しますか？"
+        : "全チームへの一括操作です。本当に実行しますか？"
+    );
+
+  if (!secondConfirmed) {
+    return;
+  }
+
+  setOperating(true);
+
+  setManagementMessage(
+    isReset
+      ? "全チームを開始前に戻し、位置情報を削除しています..."
+      : "全チームの状態を変更しています...",
+    ""
+  );
+
+  try {
+    const previousStatuses =
+      new Map(currentStatuses);
+
+    /*
+     * 全チームを開始前に戻す場合は、
+     * 保存済みの位置情報を先に削除する。
+     */
+    if (isReset) {
+      const teamIds =
+        TEAMS.map(function (team) {
+          return team.id;
+        });
+
+      const {
+        error: deleteError
+      } =
+        await supabaseClient
+          .from("team_locations")
+          .delete()
+          .in("team_id", teamIds);
+
+      if (deleteError) {
+        throw new Error(
+          "位置情報を削除できませんでした: " +
+          deleteError.message
         );
-
-      if (!confirmed) {
-        return;
       }
 
-      const secondConfirmed =
-        window.confirm(
-          "全チームへの一括操作です。" +
-          "本当に実行しますか？"
-        );
+      /*
+       * 削除後、対象チームの位置情報が
+       * 本当に0件になったか確認する。
+       */
+      const {
+        count: remainingCount,
+        error: countError
+      } =
+        await supabaseClient
+          .from("team_locations")
+          .select("team_id", {
+            count: "exact",
+            head: true
+          })
+          .in("team_id", teamIds);
 
-      if (!secondConfirmed) {
-        return;
+      if (countError) {
+        throw new Error(
+          "位置情報の削除結果を確認できませんでした: " +
+          countError.message
+        );
       }
 
-      setOperating(true);
-
-      setManagementMessage(
-        "全チームの状態を変更しています...",
-        ""
-      );
-
-      try {
-        // ★追加修正：「全チームを開始前に戻す」場合、全チームのGPSデータ履歴も一括削除する
-        if (newStatus === "waiting") {
-          const { error: deleteError } = await supabaseClient
-            .from("team_locations")
-            .delete()
-            .in(
-              "team_id",
-              TEAMS.map(function (t) { return t.id; })
-            );
-          if (deleteError) {
-             console.warn("過去の位置情報の一括削除に失敗しましたが続行します", deleteError);
-          }
-        }
-
-        const previousStatuses =
-          new Map(currentStatuses);
-
-        const updateValues = {
-          status: newStatus,
-          finished_at: null,
-          updated_at:
-            new Date().toISOString()
-        };
-
-        const {
-          data: updatedRows,
-          error
-        } =
-          await supabaseClient
-            .from("team_status")
-            .update(updateValues)
-            .in(
-              "team_id",
-              TEAMS.map(function (team) {
-                return team.id;
-              })
-            )
-            .select("team_id,status");
-
-        if (error) {
-          throw error;
-        }
-
-        if (
-          !Array.isArray(updatedRows) ||
-          updatedRows.length !== TEAMS.length
-        ) {
-          throw new Error(
-            "更新できたチームは" +
-              (
-                Array.isArray(updatedRows)
-                  ? updatedRows.length
-                  : 0
-              ) +
-              "件です。8件すべてを更新できませんでした。"
-          );
-        }
-
-        for (const team of TEAMS) {
-          await insertActionLog(
-            team.id,
-            previousStatuses.get(team.id)
-              ?.status || "unknown",
-            newStatus,
-            "bulk_status_update"
-          );
-        }
-
-        await loadTeamStatuses();
-
-        setManagementMessage(
-          "全8チームを「" +
-            statusText +
-            "」に変更しました。",
-          "success"
+      if ((remainingCount || 0) !== 0) {
+        throw new Error(
+          "位置情報が" +
+          remainingCount +
+          "件残っています。処理を中止しました。"
         );
-      } catch (error) {
-        console.error(error);
-
-        setManagementMessage(
-          "一括変更できませんでした: " +
-            error.message,
-          "error"
-        );
-      } finally {
-        setOperating(false);
       }
     }
+
+    const updateValues = {
+      status: newStatus,
+      finished_at: null,
+      updated_at:
+        new Date().toISOString()
+    };
+
+    const {
+      data: updatedRows,
+      error: updateError
+    } =
+      await supabaseClient
+        .from("team_status")
+        .update(updateValues)
+        .in(
+          "team_id",
+          TEAMS.map(function (team) {
+            return team.id;
+          })
+        )
+        .select("team_id,status");
+
+    if (updateError) {
+      throw updateError;
+    }
+
+    if (
+      !Array.isArray(updatedRows) ||
+      updatedRows.length !== TEAMS.length
+    ) {
+      throw new Error(
+        "更新できたチームは" +
+        (
+          Array.isArray(updatedRows)
+            ? updatedRows.length
+            : 0
+        ) +
+        "件です。8件すべてを更新できませんでした。"
+      );
+    }
+
+    for (const team of TEAMS) {
+      await insertActionLog(
+        team.id,
+        previousStatuses.get(team.id)
+          ?.status || "unknown",
+        newStatus,
+        isReset
+          ? "bulk_reset_and_delete_locations"
+          : "bulk_status_update"
+      );
+    }
+
+    await loadTeamStatuses();
+
+    setManagementMessage(
+      isReset
+        ? "全8チームを開始前に戻し、位置情報をすべて削除しました。"
+        : "全8チームを「" +
+          statusText +
+          "」に変更しました。",
+      "success"
+    );
+  } catch (error) {
+    console.error(error);
+
+    setManagementMessage(
+      isReset
+        ? "開始前へのリセットに失敗しました: " +
+          error.message
+        : "一括変更できませんでした: " +
+          error.message,
+      "error"
+    );
+  } finally {
+    setOperating(false);
+  }
+}
 
     async function initializeManagement() {
       try {
