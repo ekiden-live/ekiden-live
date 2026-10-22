@@ -170,6 +170,7 @@
       min-height: 1.6em;
       margin-top: 12px;
       line-height: 1.6;
+      white-space: pre-line;
       overflow-wrap: anywhere;
     }
 
@@ -448,6 +449,8 @@
         <div class="notice">
           一括操作は全8チームへ反映されます。
           操作前に確認画面が表示されます。
+          「全チームを開始前に戻す」を実行すると、
+          旧IDやテストデータを含む全位置情報を削除します。
           全チーム一括ゴール機能はありません。
         </div>
       </div>
@@ -737,10 +740,6 @@
         .forEach(function (button) {
           button.disabled = value;
         });
-
-      if (!value) {
-        loginButton.disabled = false;
-      }
     }
 
     function showLogin() {
@@ -993,34 +992,88 @@
         return;
       }
 
+      const isReset =
+        newStatus === "waiting";
+
       const confirmed =
         window.confirm(
-          team.name +
-            "を「" +
-            getStatusText(newStatus) +
-            "」に変更しますか？"
+          isReset
+            ? team.name +
+              "を「開始前」に戻し、このチームの位置情報を削除しますか？"
+            : team.name +
+              "を「" +
+              getStatusText(newStatus) +
+              "」に変更しますか？"
         );
 
       if (!confirmed) {
         return;
       }
 
+      if (isReset) {
+        const secondConfirmed =
+          window.confirm(
+            team.name +
+              "の位置情報は元に戻せません。本当に削除しますか？"
+          );
+
+        if (!secondConfirmed) {
+          return;
+        }
+      }
+
       setOperating(true);
 
       setManagementMessage(
-        "状態を変更しています...",
+        isReset
+          ? team.name +
+            "を開始前に戻し、位置情報を削除しています..."
+          : "状態を変更しています...",
         ""
       );
 
       try {
-        // ★追加修正：「開始前」にする場合、そのチームの過去のGPSデータ（履歴）を削除する
-        if (newStatus === "waiting") {
-          const { error: deleteError } = await supabaseClient
-            .from("team_locations")
-            .delete()
-            .eq("team_id", teamId);
+        if (isReset) {
+          const {
+            error: deleteError
+          } =
+            await supabaseClient
+              .from("team_locations")
+              .delete()
+              .eq("team_id", teamId);
+
           if (deleteError) {
-             console.warn("過去の位置情報の削除に失敗しましたが続行します", deleteError);
+            throw new Error(
+              "位置情報を削除できませんでした: " +
+              deleteError.message
+            );
+          }
+
+          const {
+            count: remainingCount,
+            error: countError
+          } =
+            await supabaseClient
+              .from("team_locations")
+              .select("team_id", {
+                count: "exact",
+                head: true
+              })
+              .eq("team_id", teamId);
+
+          if (countError) {
+            throw new Error(
+              "位置情報の削除結果を確認できませんでした: " +
+              countError.message
+            );
+          }
+
+          if ((remainingCount ?? 0) !== 0) {
+            throw new Error(
+              "このチームの位置情報が" +
+              remainingCount +
+              "件残っています。"
+            );
           }
         }
 
@@ -1065,16 +1118,21 @@
           teamId,
           previousStatus,
           newStatus,
-          "single_status_update"
+          isReset
+            ? "single_reset_and_delete_locations"
+            : "single_status_update"
         );
 
         await loadTeamStatuses();
 
         setManagementMessage(
-          team.name +
-            "を「" +
-            getStatusText(newStatus) +
-            "」に変更しました。",
+          isReset
+            ? team.name +
+              "を「開始前」に戻し、このチームの位置情報を削除しました。"
+            : team.name +
+              "を「" +
+              getStatusText(newStatus) +
+              "」に変更しました。",
           "success"
         );
       } catch (error) {
@@ -1090,187 +1148,180 @@
       }
     }
 
-async function updateAllTeams(
-  newStatus
-) {
-  const statusText =
-    getStatusText(newStatus);
+    async function updateAllTeams(
+      newStatus
+    ) {
+      const statusText =
+        getStatusText(newStatus);
 
-  const isReset =
-    newStatus === "waiting";
+      const isReset =
+        newStatus === "waiting";
 
-  const confirmed =
-    window.confirm(
-      isReset
-        ? "全8チームを開始前に戻し、保存されている全位置情報を削除しますか？"
-        : "全8チームを「" +
-          statusText +
-          "」に変更しますか？"
-    );
-
-  if (!confirmed) {
-    return;
-  }
-
-  const secondConfirmed =
-    window.confirm(
-      isReset
-        ? "位置情報の履歴は元に戻せません。本当に削除しますか？"
-        : "全チームへの一括操作です。本当に実行しますか？"
-    );
-
-  if (!secondConfirmed) {
-    return;
-  }
-
-  setOperating(true);
-
-  setManagementMessage(
-    isReset
-      ? "全チームを開始前に戻し、位置情報を削除しています..."
-      : "全チームの状態を変更しています...",
-    ""
-  );
-
-  try {
-    const previousStatuses =
-      new Map(currentStatuses);
-
-    /*
-     * 全チームを開始前に戻す場合は、
-     * 保存済みの位置情報を先に削除する。
-     */
-    if (isReset) {
       const teamIds =
         TEAMS.map(function (team) {
           return team.id;
         });
 
-      const {
-        error: deleteError
-      } =
-        await supabaseClient
-          .from("team_locations")
-          .delete()
-          .in("team_id", teamIds);
-
-      if (deleteError) {
-        throw new Error(
-          "位置情報を削除できませんでした: " +
-          deleteError.message
+      const confirmed =
+        window.confirm(
+          isReset
+            ? "全" +
+              TEAMS.length +
+              "チームを開始前に戻し、保存されている全位置情報を削除しますか？"
+            : "全" +
+              TEAMS.length +
+              "チームを「" +
+              statusText +
+              "」に変更しますか？"
         );
+
+      if (!confirmed) {
+        return;
       }
 
-      /*
-       * 削除後、対象チームの位置情報が
-       * 本当に0件になったか確認する。
-       */
-      const {
-        count: remainingCount,
-        error: countError
-      } =
-        await supabaseClient
-          .from("team_locations")
-          .select("team_id", {
-            count: "exact",
-            head: true
-          })
-          .in("team_id", teamIds);
-
-      if (countError) {
-        throw new Error(
-          "位置情報の削除結果を確認できませんでした: " +
-          countError.message
+      const secondConfirmed =
+        window.confirm(
+          isReset
+            ? "旧IDやテストデータを含む全位置情報を削除します。履歴は元に戻せません。本当に実行しますか？"
+            : "全チームへの一括操作です。本当に実行しますか？"
         );
+
+      if (!secondConfirmed) {
+        return;
       }
 
-      if ((remainingCount || 0) !== 0) {
-        throw new Error(
-          "位置情報が" +
-          remainingCount +
-          "件残っています。処理を中止しました。"
-        );
-      }
-    }
+      setOperating(true);
 
-    const updateValues = {
-      status: newStatus,
-      finished_at: null,
-      updated_at:
-        new Date().toISOString()
-    };
-
-    const {
-      data: updatedRows,
-      error: updateError
-    } =
-      await supabaseClient
-        .from("team_status")
-        .update(updateValues)
-        .in(
-          "team_id",
-          TEAMS.map(function (team) {
-            return team.id;
-          })
-        )
-        .select("team_id,status");
-
-    if (updateError) {
-      throw updateError;
-    }
-
-    if (
-      !Array.isArray(updatedRows) ||
-      updatedRows.length !== TEAMS.length
-    ) {
-      throw new Error(
-        "更新できたチームは" +
-        (
-          Array.isArray(updatedRows)
-            ? updatedRows.length
-            : 0
-        ) +
-        "件です。8件すべてを更新できませんでした。"
-      );
-    }
-
-    for (const team of TEAMS) {
-      await insertActionLog(
-        team.id,
-        previousStatuses.get(team.id)
-          ?.status || "unknown",
-        newStatus,
+      setManagementMessage(
         isReset
-          ? "bulk_reset_and_delete_locations"
-          : "bulk_status_update"
+          ? "全チームを開始前に戻し、位置情報を削除しています..."
+          : "全チームの状態を変更しています...",
+        ""
       );
+
+      try {
+        const previousStatuses =
+          new Map(currentStatuses);
+
+        let deletedLocationCount = 0;
+
+        /*
+         * 管理者専用RPCを呼び出し、
+         * 旧ID・テストIDを含む位置情報を全件削除する。
+         */
+        if (isReset) {
+          const {
+            data: deletedCount,
+            error: deleteError
+          } =
+            await supabaseClient.rpc(
+              "reset_all_team_locations"
+            );
+
+          if (deleteError) {
+            throw new Error(
+              "位置情報を削除できませんでした: " +
+              deleteError.message
+            );
+          }
+
+          deletedLocationCount =
+            Number(deletedCount ?? 0);
+
+          if (
+            !Number.isFinite(
+              deletedLocationCount
+            ) ||
+            deletedLocationCount < 0
+          ) {
+            throw new Error(
+              "位置情報の削除件数を確認できませんでした。"
+            );
+          }
+        }
+
+        const updateValues = {
+          status: newStatus,
+          finished_at: null,
+          updated_at:
+            new Date().toISOString()
+        };
+
+        const {
+          data: updatedRows,
+          error: updateError
+        } =
+          await supabaseClient
+            .from("team_status")
+            .update(updateValues)
+            .in("team_id", teamIds)
+            .select("team_id,status");
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        if (
+          !Array.isArray(updatedRows) ||
+          updatedRows.length !==
+            TEAMS.length
+        ) {
+          throw new Error(
+            "更新できたチームは" +
+            (
+              Array.isArray(updatedRows)
+                ? updatedRows.length
+                : 0
+            ) +
+            "件です。" +
+            TEAMS.length +
+            "件すべてを更新できませんでした。"
+          );
+        }
+
+        for (const team of TEAMS) {
+          await insertActionLog(
+            team.id,
+            previousStatuses.get(team.id)
+              ?.status || "unknown",
+            newStatus,
+            isReset
+              ? "bulk_reset_and_delete_locations"
+              : "bulk_status_update"
+          );
+        }
+
+        await loadTeamStatuses();
+
+        setManagementMessage(
+          isReset
+            ? "全" +
+              TEAMS.length +
+              "チームを開始前に戻し、位置情報をすべて削除しました。\n削除件数: " +
+              deletedLocationCount +
+              "件"
+            : "全" +
+              TEAMS.length +
+              "チームを「" +
+              statusText +
+              "」に変更しました。",
+          "success"
+        );
+      } catch (error) {
+        console.error(error);
+
+        setManagementMessage(
+          isReset
+            ? "開始前へのリセットに失敗しました: " +
+              error.message
+            : "一括変更できませんでした: " +
+              error.message,
+          "error"
+        );
+      } finally {
+        setOperating(false);
+      }
     }
-
-    await loadTeamStatuses();
-
-    setManagementMessage(
-      isReset
-        ? "全8チームを開始前に戻し、位置情報をすべて削除しました。"
-        : "全8チームを「" +
-          statusText +
-          "」に変更しました。",
-      "success"
-    );
-  } catch (error) {
-    console.error(error);
-
-    setManagementMessage(
-      isReset
-        ? "開始前へのリセットに失敗しました: " +
-          error.message
-        : "一括変更できませんでした: " +
-          error.message,
-      "error"
-    );
-  } finally {
-    setOperating(false);
-  }
-}
 
     async function initializeManagement() {
       try {
@@ -1400,8 +1451,15 @@ async function updateAllTeams(
         setOperating(true);
 
         try {
-          await supabaseClient.auth
-            .signOut();
+          const {
+            error
+          } =
+            await supabaseClient.auth
+              .signOut();
+
+          if (error) {
+            throw error;
+          }
 
           showLogin();
 
