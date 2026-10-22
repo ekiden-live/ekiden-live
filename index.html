@@ -13,6 +13,7 @@
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
   >
 
   <style>
@@ -293,18 +294,10 @@
     }
 
     /*
-     * 走者マーカー全体
-     *
-     * マーカー枠の左端から25px、
-     * 上端から30pxの場所が走者の中心。
-     * iconAnchorも同じ座標に設定する。
+     * 走者マーカー
+     * Leafletが設定する位置とtransformは変更しない。
      */
-    .map-team-icon,
-    .map-team-icon.leaflet-div-icon {
-      width: 210px !important;
-      height: 60px !important;
-      margin: 0 !important;
-      padding: 0 !important;
+    .map-team-icon {
       overflow: visible !important;
       background: transparent !important;
       border: 0 !important;
@@ -313,24 +306,16 @@
     .marker-wrapper {
       display: flex;
       align-items: center;
-      width: max-content;
-      height: 60px;
-      margin: 0;
-      padding: 0;
+      width: 200px;
+      height: 56px;
       overflow: visible;
     }
 
-    /*
-     * 走者アイコン
-     * 50px × 50pxで固定する。
-     */
     .marker-runner {
       display: block;
-      flex: 0 0 50px;
-      width: 50px;
-      height: 50px;
-      margin: 0;
-      padding: 0;
+      flex: 0 0 46px;
+      width: 46px;
+      height: 46px;
       overflow: visible;
       filter:
         drop-shadow(
@@ -351,7 +336,7 @@
       display: block;
       flex: 0 0 auto;
       width: max-content;
-      max-width: 150px;
+      max-width: 145px;
       margin-left: 6px;
       padding: 4px 8px;
       color: #111;
@@ -383,10 +368,7 @@
 
     /* 固定地点マーカー */
     .checkpoint-map-icon {
-      display: block !important;
       overflow: visible !important;
-      visibility: visible !important;
-      opacity: 1 !important;
       pointer-events: none !important;
       background:
         transparent !important;
@@ -399,8 +381,6 @@
       width: 38px;
       height: 38px;
       overflow: visible;
-      visibility: visible !important;
-      opacity: 1 !important;
     }
 
     .checkpoint-marker-symbol {
@@ -422,8 +402,6 @@
         0 0 0 2px #17212b,
         0 2px 6px
         rgba(0, 0, 0, 0.45);
-      visibility: visible !important;
-      opacity: 1 !important;
     }
 
     .checkpoint-marker-label {
@@ -445,8 +423,6 @@
       box-shadow:
         0 2px 6px
         rgba(0, 0, 0, 0.3);
-      visibility: visible !important;
-      opacity: 1 !important;
     }
 
     .checkpoint-label-left
@@ -464,99 +440,6 @@
       color: #66737f;
       font-size: 0.85rem;
       text-align: center;
-    }
-
-    .leaflet-container {
-      position: relative;
-      max-width: 100%;
-      overflow: hidden;
-      outline-offset: 1px;
-      background: #ddd;
-      -webkit-tap-highlight-color:
-        transparent;
-    }
-
-    .leaflet-tile,
-    .leaflet-marker-icon,
-    .leaflet-marker-shadow {
-      user-select: none;
-      -webkit-user-drag: none;
-    }
-
-    .leaflet-tile {
-      visibility: hidden;
-      filter: inherit;
-    }
-
-    .leaflet-tile-loaded {
-      visibility: inherit;
-    }
-
-    .leaflet-zoom-animated {
-      transform-origin: 0 0;
-    }
-
-    .leaflet-control {
-      position: relative;
-      z-index: 800;
-      pointer-events: auto;
-    }
-
-    .leaflet-top,
-    .leaflet-bottom {
-      position: absolute;
-      z-index: 1000;
-      pointer-events: none;
-    }
-
-    .leaflet-top {
-      top: 0;
-    }
-
-    .leaflet-right {
-      right: 0;
-    }
-
-    .leaflet-bottom {
-      bottom: 0;
-    }
-
-    .leaflet-left {
-      left: 0;
-    }
-
-    .leaflet-top .leaflet-control {
-      margin-top: 10px;
-    }
-
-    .leaflet-bottom .leaflet-control {
-      margin-bottom: 10px;
-    }
-
-    .leaflet-left .leaflet-control {
-      margin-left: 10px;
-    }
-
-    .leaflet-right .leaflet-control {
-      margin-right: 10px;
-    }
-
-    .leaflet-container img.leaflet-tile {
-      width: 256px !important;
-      height: 256px !important;
-      max-width: none !important;
-      max-height: none !important;
-      margin: 0 !important;
-      padding: 0 !important;
-      object-fit: fill !important;
-      border: 0 !important;
-    }
-
-    .leaflet-container
-    img.leaflet-marker-icon,
-    .leaflet-container
-    img.leaflet-marker-shadow {
-      max-width: none !important;
     }
 
     @media (max-width: 600px) {
@@ -724,20 +607,12 @@
 
     <section class="class-section">
       <h2>Aクラス</h2>
-
-      <div
-        id="classAList"
-        class="team-grid"
-      ></div>
+      <div id="classAList" class="team-grid"></div>
     </section>
 
     <section class="class-section">
       <h2>Bクラス</h2>
-
-      <div
-        id="classBList"
-        class="team-grid"
-      ></div>
+      <div id="classBList" class="team-grid"></div>
     </section>
   </main>
 
@@ -748,6 +623,7 @@
 
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    crossorigin=""
   ></script>
 
   <script>
@@ -911,10 +787,7 @@
 
     const teamById = new Map(
       TEAMS.map(function (team) {
-        return [
-          team.id,
-          team
-        ];
+        return [team.id, team];
       })
     );
 
@@ -938,15 +811,17 @@
         "classBList"
       );
 
-    const map = L.map(
-      "map",
-      {
-        zoomControl: true,
-        zoomAnimation: true,
-        fadeAnimation: false,
-        markerZoomAnimation: true
-      }
-    ).setView(
+    /*
+     * ズームアニメーションを止め、
+     * 地図タイルとマーカーを同じタイミングで
+     * 再配置させる。
+     */
+    const map = L.map("map", {
+      zoomControl: true,
+      zoomAnimation: false,
+      fadeAnimation: false,
+      markerZoomAnimation: false
+    }).setView(
       DEFAULT_MAP_CENTER,
       DEFAULT_MAP_ZOOM
     );
@@ -961,12 +836,6 @@
 
     checkpointPane.style.pointerEvents =
       "none";
-
-    checkpointPane.style.visibility =
-      "visible";
-
-    checkpointPane.style.opacity =
-      "1";
 
     L.tileLayer(
       "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -1064,12 +933,10 @@
         return hours + "時間前";
       }
 
-      const days =
-        Math.floor(
-          hours / 24
-        );
-
-      return days + "日前";
+      return (
+        Math.floor(hours / 24) +
+        "日前"
+      );
     }
 
     function getManagementStatusText(
@@ -1172,34 +1039,22 @@
     function createCheckpointMarkers() {
       CHECKPOINTS.forEach(
         function (checkpoint) {
-          const position = [
-            checkpoint.latitude,
-            checkpoint.longitude
-          ];
-
-          const marker =
-            L.marker(
-              position,
-              {
-                icon:
-                  createCheckpointIcon(
-                    checkpoint
-                  ),
-                pane:
-                  "checkpointPane",
-                zIndexOffset: 10000,
-                interactive: false,
-                keyboard: false,
-                riseOnHover: false,
-                opacity: 1
-              }
-            );
-
-          marker.addTo(map);
-
-          marker.setZIndexOffset(
-            10000
-          );
+          L.marker(
+            [
+              checkpoint.latitude,
+              checkpoint.longitude
+            ],
+            {
+              icon:
+                createCheckpointIcon(
+                  checkpoint
+                ),
+              pane: "checkpointPane",
+              zIndexOffset: 10000,
+              interactive: false,
+              keyboard: false
+            }
+          ).addTo(map);
         }
       );
     }
@@ -1236,9 +1091,7 @@
           card.innerHTML =
             '<div class="team-card-header">' +
               '<div class="team-name">' +
-                escapeHtml(
-                  team.name
-                ) +
+                escapeHtml(team.name) +
                 "（" +
                 escapeHtml(
                   team.colorName
@@ -1258,20 +1111,19 @@
                   team.id
                 );
 
-              if (marker) {
-                const latLng =
-                  marker.getLatLng();
-
-                map.setView(
-                  latLng,
-                  15,
-                  {
-                    animate: true
-                  }
-                );
-
-                marker.openPopup();
+              if (!marker) {
+                return;
               }
+
+              map.setView(
+                marker.getLatLng(),
+                15,
+                {
+                  animate: false
+                }
+              );
+
+              marker.openPopup();
             }
           );
 
@@ -1293,44 +1145,36 @@
     function buildQueryValueList() {
       return (
         "(" +
-        TEAMS.map(
-          function (team) {
-            return (
-              '"' +
-              team.id.replaceAll(
-                '"',
-                '\\"'
-              ) +
-              '"'
-            );
-          }
-        ).join(",") +
+        TEAMS.map(function (team) {
+          return (
+            '"' +
+            team.id.replaceAll(
+              '"',
+              '\\"'
+            ) +
+            '"'
+          );
+        }).join(",") +
         ")"
       );
     }
 
-    async function fetchJson(
-      endpoint
-    ) {
+    async function fetchJson(endpoint) {
       const response =
-        await fetch(
-          endpoint,
-          {
-            method: "GET",
-            headers: {
-              apikey:
-                SUPABASE_KEY,
-              Authorization:
-                "Bearer " +
-                SUPABASE_KEY,
-              Accept:
-                "application/json",
-              "Accept-Profile":
-                "public"
-            },
-            cache: "no-store"
-          }
-        );
+        await fetch(endpoint, {
+          method: "GET",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization:
+              "Bearer " +
+              SUPABASE_KEY,
+            Accept:
+              "application/json",
+            "Accept-Profile":
+              "public"
+          },
+          cache: "no-store"
+        });
 
       if (!response.ok) {
         const responseText =
@@ -1358,9 +1202,7 @@
           buildQueryValueList()
         );
 
-      return await fetchJson(
-        endpoint
-      );
+      return await fetchJson(endpoint);
     }
 
     async function fetchLatestLocations() {
@@ -1379,30 +1221,24 @@
         "&limit=5000";
 
       const rows =
-        await fetchJson(
-          endpoint
-        );
+        await fetchJson(endpoint);
 
       const latestByTeam =
         new Map();
 
-      rows.forEach(
-        function (row) {
-          if (
-            teamById.has(
-              row.team_id
-            ) &&
-            !latestByTeam.has(
-              row.team_id
-            )
-          ) {
-            latestByTeam.set(
-              row.team_id,
-              row
-            );
-          }
+      rows.forEach(function (row) {
+        if (
+          teamById.has(row.team_id) &&
+          !latestByTeam.has(
+            row.team_id
+          )
+        ) {
+          latestByTeam.set(
+            row.team_id,
+            row
+          );
         }
-      );
+      });
 
       return latestByTeam;
     }
@@ -1426,49 +1262,36 @@
       const combined =
         new Map();
 
-      TEAMS.forEach(
-        function (team) {
-          const statusRow =
-            statusByTeam.get(
-              team.id
-            );
+      TEAMS.forEach(function (team) {
+        const statusRow =
+          statusByTeam.get(
+            team.id
+          );
 
-          const location =
+        combined.set(team.id, {
+          team: team,
+          status:
+            statusRow?.status ||
+            "unknown",
+          finishedAt:
+            statusRow
+              ?.finished_at ||
+            null,
+          location:
             latestLocations.get(
               team.id
-            ) || null;
-
-          combined.set(
-            team.id,
-            {
-              team: team,
-              status:
-                statusRow?.status ||
-                "unknown",
-              finishedAt:
-                statusRow
-                  ?.finished_at ||
-                null,
-              location: location
-            }
-          );
-        }
-      );
+            ) || null
+        });
+      });
 
       return combined;
     }
 
-    /*
-     * 走者アイコンを生成する。
-     *
-     * 走者SVGの中心が緯度・経度と
-     * 完全に一致するように設定する。
-     */
     function createMarkerIcon(state) {
       const team =
         state.team;
 
-      const wrapperClasses = [
+      const classes = [
         "marker-wrapper"
       ];
 
@@ -1476,7 +1299,7 @@
         state.status ===
         "finished"
       ) {
-        wrapperClasses.push(
+        classes.push(
           "marker-finished"
         );
       }
@@ -1487,18 +1310,17 @@
             ?.recorded_at
         )
       ) {
-        wrapperClasses.push(
+        classes.push(
           "marker-stale"
         );
       }
 
-      const svgIcon =
+      const svg =
         '<svg xmlns="http://www.w3.org/2000/svg" ' +
           'viewBox="70 -20 500 660" ' +
           'preserveAspectRatio="xMidYMid meet" ' +
           'class="marker-runner" ' +
           'aria-hidden="true" ' +
-          'focusable="false" ' +
           'style="color:' +
             escapeHtml(
               team.colorCode
@@ -1509,9 +1331,9 @@
 
       const html =
         '<div class="' +
-          wrapperClasses.join(" ") +
+          classes.join(" ") +
         '">' +
-          svgIcon +
+          svg +
           '<span class="marker-label">' +
             escapeHtml(
               team.name
@@ -1520,18 +1342,16 @@
         "</div>";
 
       /*
-       * 走者は50px幅なので中心は25px。
-       * マーカー枠は60px高なので中心は30px。
-       *
-       * 緯度・経度を走者の中心へ固定する。
+       * 走者の表示領域は先頭46px。
+       * その中心23pxを緯度経度へ固定する。
        */
       return L.divIcon({
         className:
           "map-team-icon",
         html: html,
-        iconSize: [210, 60],
-        iconAnchor: [25, 30],
-        popupAnchor: [0, -32]
+        iconSize: [200, 56],
+        iconAnchor: [23, 28],
+        popupAnchor: [0, -30]
       });
     }
 
@@ -1575,9 +1395,7 @@
 
       return (
         "<strong>" +
-          escapeHtml(
-            team.name
-          ) +
+          escapeHtml(team.name) +
         "</strong><br>" +
         escapeHtml(
           team.className
@@ -1619,12 +1437,11 @@
       const location =
         state.location;
 
-      const shouldHide =
+      if (
         state.status ===
           "waiting" ||
-        !location;
-
-      if (shouldHide) {
+        !location
+      ) {
         const oldMarker =
           markers.get(
             team.id
@@ -1654,12 +1471,8 @@
         );
 
       if (
-        !Number.isFinite(
-          latitude
-        ) ||
-        !Number.isFinite(
-          longitude
-        )
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
       ) {
         return;
       }
@@ -1675,21 +1488,20 @@
         );
 
       if (!marker) {
-        marker =
-          L.marker(
-            position,
-            {
-              icon:
-                createMarkerIcon(
-                  state
-                ),
-              zIndexOffset:
-                state.status ===
-                "finished"
-                  ? 500
-                  : 0
-            }
-          ).addTo(map);
+        marker = L.marker(
+          position,
+          {
+            icon:
+              createMarkerIcon(
+                state
+              ),
+            zIndexOffset:
+              state.status ===
+              "finished"
+                ? 500
+                : 0
+          }
+        ).addTo(map);
 
         markers.set(
           team.id,
@@ -1731,22 +1543,22 @@
         return;
       }
 
-      const statusBadge =
+      const badge =
         card.querySelector(
           ".status-badge"
         );
 
-      if (!statusBadge) {
+      if (!badge) {
         return;
       }
 
-      statusBadge.className =
+      badge.className =
         "status-badge " +
         getManagementStatusClass(
           state.status
         );
 
-      statusBadge.textContent =
+      badge.textContent =
         getManagementStatusText(
           state.status
         );
@@ -1757,13 +1569,8 @@
     ) {
       combinedState.forEach(
         function (state) {
-          updateTeamCard(
-            state
-          );
-
-          updateMapMarker(
-            state
-          );
+          updateTeamCard(state);
+          updateMapMarker(state);
         }
       );
     }
@@ -1783,26 +1590,22 @@
         function (state) {
           if (
             state.status ===
-            "waiting"
+            "waiting" ||
+            !state.location
           ) {
-            return;
-          }
-
-          const location =
-            state.location;
-
-          if (!location) {
             return;
           }
 
           const latitude =
             Number(
-              location.latitude
+              state.location
+                .latitude
             );
 
           const longitude =
             Number(
-              location.longitude
+              state.location
+                .longitude
             );
 
           if (
@@ -1833,7 +1636,10 @@
       ) {
         map.setView(
           DEFAULT_MAP_CENTER,
-          DEFAULT_MAP_ZOOM
+          DEFAULT_MAP_ZOOM,
+          {
+            animate: false
+          }
         );
 
         return;
@@ -1844,25 +1650,26 @@
       ) {
         map.setView(
           positions[0],
-          15
+          15,
+          {
+            animate: false
+          }
         );
 
         return;
       }
 
-      const bounds =
+      map.fitBounds(
         L.latLngBounds(
           positions
-        );
-
-      map.fitBounds(
-        bounds,
+        ),
         {
           paddingTopLeft:
-            [70, 65],
+            [70, 60],
           paddingBottomRight:
-            [210, 65],
-          maxZoom: 16
+            [200, 60],
+          maxZoom: 16,
+          animate: false
         }
       );
     }
@@ -1873,24 +1680,12 @@
       }
 
       isRefreshing = true;
-
-      refreshButton.disabled =
-        true;
+      refreshButton.disabled = true;
 
       overallStatusElement.textContent =
         "最新データを取得しています...";
 
       try {
-        if (
-          !SUPABASE_KEY.startsWith(
-            "sb_publishable_"
-          )
-        ) {
-          throw new Error(
-            "Publishable keyが設定されていません。"
-          );
-        }
-
         const results =
           await Promise.all([
             fetchTeamStatuses(),
@@ -1943,7 +1738,9 @@
         if (!hasFittedInitially) {
           window.setTimeout(
             function () {
-              map.invalidateSize();
+              map.invalidateSize({
+                animate: false
+              });
 
               fitAllTeams();
 
@@ -1953,7 +1750,9 @@
             300
           );
         } else {
-          map.invalidateSize();
+          map.invalidateSize({
+            animate: false
+          });
         }
       } catch (error) {
         console.error(error);
@@ -1978,9 +1777,7 @@
           );
       } finally {
         isRefreshing = false;
-
-        refreshButton.disabled =
-          false;
+        refreshButton.disabled = false;
       }
     }
 
@@ -1994,7 +1791,9 @@
 
     window.setTimeout(
       function () {
-        map.invalidateSize();
+        map.invalidateSize({
+          animate: false
+        });
       },
       200
     );
@@ -2022,51 +1821,12 @@
         resizeTimer =
           window.setTimeout(
             function () {
-              map.invalidateSize();
+              map.invalidateSize({
+                animate: false
+              });
             },
             200
           );
-      }
-    );
-
-    function refreshCheckpointLayer() {
-      const pane =
-        map.getPane(
-          "checkpointPane"
-        );
-
-      if (!pane) {
-        return;
-      }
-
-      pane.style.zIndex =
-        "650";
-
-      pane.style.visibility =
-        "visible";
-
-      pane.style.opacity =
-        "1";
-    }
-
-    map.on(
-      "zoomend",
-      function () {
-        refreshCheckpointLayer();
-      }
-    );
-
-    map.on(
-      "moveend",
-      function () {
-        refreshCheckpointLayer();
-      }
-    );
-
-    map.on(
-      "resize",
-      function () {
-        refreshCheckpointLayer();
       }
     );
 
@@ -2075,7 +1835,10 @@
       function () {
         window.setTimeout(
           function () {
-            map.invalidateSize();
+            map.invalidateSize({
+              animate: false
+            });
+
             fitAllTeams();
           },
           400
