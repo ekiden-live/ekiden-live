@@ -291,20 +291,23 @@
     .marker-wrapper {
       display: flex;
       align-items: center;
+      height: 100%;
     }
 
     /* SVGの走者アイコンの設定 */
     .marker-runner {
       flex: 0 0 auto;
-      width: 32px;
-      height: 32px;
+      /* 中継所の円(38px)と視覚的なボリュームを合わせるため、少し大きめの42pxに設定 */
+      width: 42px;
+      height: 42px;
+      overflow: visible;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
     }
     
     /* 白色チームでも視認できるように、SVGのふちに黒の枠線をつける */
     .marker-runner path {
       stroke: #222;
-      stroke-width: 25px;
+      stroke-width: 18px;
       stroke-linejoin: round;
       paint-order: stroke fill;
     }
@@ -312,10 +315,10 @@
     .marker-label {
       width: max-content;
       max-width: 130px;
-      margin-left: 5px;
-      padding: 3px 7px;
+      margin-left: 6px;
+      padding: 4px 8px;
       color: #111;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: bold;
       line-height: 1.35;
       white-space: normal;
@@ -340,8 +343,7 @@
       line-height: 1.7;
     }
 
-    /* 固定地点マーカー
-       ズーム・移動時も常に表示するため専用レイヤーを使用 */
+    /* 固定地点マーカー */
     .checkpoint-map-icon {
       background: transparent !important;
       border: 0 !important;
@@ -1303,12 +1305,13 @@
           "</span>" +
         "</div>";
 
+      // SVGアイコンのサイズ(42px)に合わせて地図上の配置・中心点(21px)を調整
       return L.divIcon({
         className: "map-team-icon",
         html: html,
-        iconSize: [165, 52],
-        iconAnchor: [16, 16],
-        popupAnchor: [0, -17]
+        iconSize: [180, 52], 
+        iconAnchor: [21, 26], // xを中心(42/2)に合わせる
+        popupAnchor: [0, -25]
       });
     }
 
