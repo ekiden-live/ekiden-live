@@ -293,15 +293,16 @@
     }
 
     /*
-     * チーム位置マーカー
+     * 走者マーカー全体
      *
-     * 位置座標はマーカー枠の左下にある
-     * ポインター先端へ固定する。
+     * マーカー枠の左端から25px、
+     * 上端から30pxの場所が走者の中心。
+     * iconAnchorも同じ座標に設定する。
      */
     .map-team-icon,
     .map-team-icon.leaflet-div-icon {
-      width: 220px !important;
-      height: 70px !important;
+      width: 210px !important;
+      height: 60px !important;
       margin: 0 !important;
       padding: 0 !important;
       overflow: visible !important;
@@ -310,27 +311,24 @@
     }
 
     .marker-wrapper {
-      position: relative;
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       width: max-content;
-      min-width: 0;
-      height: 70px;
+      height: 60px;
       margin: 0;
-      padding: 0 0 10px 0;
+      padding: 0;
       overflow: visible;
     }
 
     /*
-     * 走者アイコンを54pxへ縮小。
+     * 走者アイコン
+     * 50px × 50pxで固定する。
      */
     .marker-runner {
-      position: relative;
-      z-index: 2;
       display: block;
-      flex: 0 0 54px;
-      width: 54px;
-      height: 54px;
+      flex: 0 0 50px;
+      width: 50px;
+      height: 50px;
       margin: 0;
       padding: 0;
       overflow: visible;
@@ -349,38 +347,11 @@
       paint-order: stroke fill;
     }
 
-    /*
-     * 走者下部のポインター先端が
-     * 緯度経度の正確な地点を示す。
-     */
-    .marker-pointer {
-      position: absolute;
-      z-index: 1;
-      left: 22px;
-      bottom: 0;
-      width: 0;
-      height: 0;
-      border-top:
-        13px solid var(--marker-color, #333);
-      border-right:
-        5px solid transparent;
-      border-left:
-        5px solid transparent;
-      filter:
-        drop-shadow(
-          0 1px 1px
-          rgba(0, 0, 0, 0.5)
-        );
-    }
-
     .marker-label {
-      position: relative;
-      z-index: 3;
       display: block;
       flex: 0 0 auto;
       width: max-content;
       max-width: 150px;
-      margin-top: 8px;
       margin-left: 6px;
       padding: 4px 8px;
       color: #111;
@@ -1007,12 +978,7 @@
     ).addTo(map);
 
     const markers = new Map();
-
-    const accuracyCircles =
-      new Map();
-
-    const teamCards =
-      new Map();
+    const teamCards = new Map();
 
     let latestStateByTeam =
       new Map();
@@ -1492,6 +1458,12 @@
       return combined;
     }
 
+    /*
+     * 走者アイコンを生成する。
+     *
+     * 走者SVGの中心が緯度・経度と
+     * 完全に一致するように設定する。
+     */
     function createMarkerIcon(state) {
       const team =
         state.team;
@@ -1538,13 +1510,8 @@
       const html =
         '<div class="' +
           wrapperClasses.join(" ") +
-          '" style="--marker-color:' +
-          escapeHtml(
-            team.colorCode
-          ) +
         '">' +
           svgIcon +
-          '<span class="marker-pointer" aria-hidden="true"></span>' +
           '<span class="marker-label">' +
             escapeHtml(
               team.name
@@ -1553,19 +1520,18 @@
         "</div>";
 
       /*
-       * ポインター先端は枠内の
-       * x=27px、y=70pxにある。
+       * 走者は50px幅なので中心は25px。
+       * マーカー枠は60px高なので中心は30px。
        *
-       * この位置を緯度経度へ固定するため、
-       * iconAnchorも同じ値にする。
+       * 緯度・経度を走者の中心へ固定する。
        */
       return L.divIcon({
         className:
           "map-team-icon",
         html: html,
-        iconSize: [220, 70],
-        iconAnchor: [27, 70],
-        popupAnchor: [0, -72]
+        iconSize: [210, 60],
+        iconAnchor: [25, 30],
+        popupAnchor: [0, -32]
       });
     }
 
@@ -1674,21 +1640,6 @@
           );
         }
 
-        const oldCircle =
-          accuracyCircles.get(
-            team.id
-          );
-
-        if (oldCircle) {
-          map.removeLayer(
-            oldCircle
-          );
-
-          accuracyCircles.delete(
-            team.id
-          );
-        }
-
         return;
       }
 
@@ -1768,67 +1719,6 @@
           state
         )
       );
-
-      const accuracy =
-        Number(
-          location.accuracy
-        );
-
-      let circle =
-        accuracyCircles.get(
-          team.id
-        );
-
-      if (
-        Number.isFinite(
-          accuracy
-        ) &&
-        accuracy > 0
-      ) {
-        if (!circle) {
-          circle =
-            L.circle(
-              position,
-              {
-                radius:
-                  accuracy,
-                color:
-                  team.colorCode,
-                weight: 1,
-                opacity: 0.55,
-                fillColor:
-                  team.colorCode,
-                fillOpacity: 0.08
-              }
-            ).addTo(map);
-
-          accuracyCircles.set(
-            team.id,
-            circle
-          );
-        } else {
-          circle.setLatLng(
-            position
-          );
-
-          circle.setRadius(
-            accuracy
-          );
-
-          circle.setStyle({
-            color:
-              team.colorCode,
-            fillColor:
-              team.colorCode
-          });
-        }
-      } else if (circle) {
-        map.removeLayer(circle);
-
-        accuracyCircles.delete(
-          team.id
-        );
-      }
     }
 
     function updateTeamCard(state) {
@@ -1968,9 +1858,10 @@
       map.fitBounds(
         bounds,
         {
-          paddingTopLeft: [80, 80],
+          paddingTopLeft:
+            [70, 65],
           paddingBottomRight:
-            [220, 80],
+            [210, 65],
           maxZoom: 16
         }
       );
