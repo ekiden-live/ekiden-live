@@ -826,6 +826,20 @@
       DEFAULT_MAP_ZOOM
     );
 
+    /*
+     * コース線は走者・中継所より背面へ表示する。
+     */
+    const coursePane =
+      map.createPane(
+        "coursePane"
+      );
+
+    coursePane.style.zIndex =
+      "450";
+
+    coursePane.style.pointerEvents =
+      "none";
+
     const checkpointPane =
       map.createPane(
         "checkpointPane"
@@ -857,6 +871,8 @@
 
     let lastSuccessfulRefreshAt =
       null;
+
+    let courseLayer = null;
 
     function escapeHtml(value) {
       return String(value ?? "")
@@ -1034,6 +1050,85 @@
         iconSize: [38, 38],
         iconAnchor: [19, 19]
       });
+    }
+
+    async function loadCourseGeoJson() {
+      try {
+        const response =
+          await fetch(
+            "./ekiden-course-complete.geojson",
+            {
+              cache: "no-store"
+            }
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            "HTTP " +
+            response.status
+          );
+        }
+
+        const courseData =
+          await response.json();
+
+        courseLayer =
+          L.geoJSON(
+            courseData,
+            {
+              pane:
+                "coursePane",
+
+              /*
+               * GeoJSON内の線だけを表示し、
+               * 地点は既存の中継所表示と重複させない。
+               */
+              filter:
+                function (
+                  feature
+                ) {
+                  const geometryType =
+                    feature &&
+                    feature.geometry
+                      ? feature
+                          .geometry
+                          .type
+                      : "";
+
+                  return (
+                    geometryType ===
+                      "LineString" ||
+                    geometryType ===
+                      "MultiLineString"
+                  );
+                },
+
+              style:
+                function () {
+                  return {
+                    color:
+                      "#d7191c",
+                    weight: 6,
+                    opacity: 0.9,
+                    lineCap:
+                      "round",
+                    lineJoin:
+                      "round"
+                  };
+                },
+
+              interactive:
+                false
+            }
+          );
+
+        courseLayer.addTo(map);
+      } catch (error) {
+        console.error(
+          "コースデータを読み込めませんでした。",
+          error
+        );
+      }
     }
 
     function createCheckpointMarkers() {
@@ -1782,6 +1877,7 @@
     }
 
     createCheckpointMarkers();
+    loadCourseGeoJson();
     createTeamCards();
 
     refreshButton.addEventListener(
