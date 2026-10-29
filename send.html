@@ -8,7 +8,7 @@
     content="width=device-width, initial-scale=1.0"
   >
 
-  <title>位置情報常時送信</title>
+  <title>位置情報自動送信</title>
 
   <style>
     * {
@@ -184,7 +184,7 @@
 <body>
   <main>
     <div id="mainCard" class="card">
-      <h1>位置情報常時送信</h1>
+      <h1>位置情報自動送信</h1>
 
       <div id="teamPanel">
         <span class="team-label">送信チーム</span>
@@ -214,7 +214,7 @@
           type="button"
           disabled
         >
-          常時送信を開始
+          自動送信を開始
         </button>
 
         <button
@@ -222,7 +222,7 @@
           type="button"
           disabled
         >
-          常時送信を停止
+          自動送信を停止
         </button>
       </div>
 
@@ -613,7 +613,7 @@
 
       setStatus(
         message ||
-          "位置情報の常時送信を停止しました。",
+          "位置情報の自動送信を停止しました。",
         type || ""
       );
     }
@@ -655,7 +655,7 @@
           stopButton.disabled = true;
 
           setStatus(
-            "競技中です。「常時送信を開始」を押してください。",
+            "競技中です。「自動送信を開始」を押してください。",
             "success"
           );
         }
@@ -1113,7 +1113,7 @@
       "click",
       function () {
         stopAutomaticSending(
-          "位置情報の常時送信を停止しました。",
+          "位置情報の自動送信を停止しました。",
           ""
         );
       }
